@@ -12,37 +12,37 @@ namespace Capture
     /// <summary>
     /// Настройки захвата.
     /// </summary>
-    public interface ICaptureSettings<out TBitRate, out TVideoCodec, out TAreaKind>
+    public interface ICaptureSettings<TBitRate, TVideoCodec, TAreaKind>
         where TBitRate : struct
-        where TVideoCodec : struct
         where TAreaKind : struct
+        where TVideoCodec : struct
     {
         /// <summary>
         /// Путь до папки хранения.
         /// </summary>
-        string OutputPath { get; }
-
-        /// <summary>
-        /// Количество бит исп. для обработки данных.
-        /// </summary>
-        TBitRate Rate { get; }
-        /// <summary>
-        /// Тип используемого сжатия.
-        /// </summary>
-        TVideoCodec VideoCodec { get; }
-        /// <summary>
-        /// Количество кадров в секунду.
-        /// </summary>
-        int Fps { get; }
+        string OutputPath { get; set; }
 
         /// <summary>
         /// Выбраная область.
         /// </summary>
-        Rectangle Area { get; }
+        Rectangle Area { get; set; }
         /// <summary>
         /// Тип захвата видео.
         /// </summary>
-        TAreaKind AreaKind { get; }
+        TAreaKind AreaKind { get; set; }
+
+        /// <summary>
+        /// Количество бит исп. для обработки данных.
+        /// </summary>
+        TBitRate Rate { get; set; }
+        /// <summary>
+        /// Тип используемого сжатия.
+        /// </summary>
+        TVideoCodec VideoCodec { get; set; }
+        /// <summary>
+        /// Количество кадров в секунду.
+        /// </summary>
+        int Fps { get; set; }
     }
 
     public interface ICaptureInfObject
@@ -55,8 +55,8 @@ namespace Capture
     /// </summary>
     public interface ICaptureController<TBitRate, TVideoCodec, TAreaKind>
         where TBitRate : struct
-        where TVideoCodec : struct
         where TAreaKind : struct
+        where TVideoCodec : struct
     {
         /// <summary>
         /// Настройки захвата.
@@ -73,25 +73,22 @@ namespace Capture
         /// </summary>
         bool IsRecording { get; }
 
-        void GetFrame(object sender, ref Bitmap frame);
+        void GetFrame(object sender, Bitmap frame);
 
         /// <summary>
         /// Запуск захвата.
         /// </summary>
-        /// <returns>В случае успеха возвращает true, в провтином случае - false.</returns>
-        bool Start();
+        void Start();
         /// <summary>
         /// Остановка захвата.
         /// </summary>
-        /// <returns>В случае успеха возвращает true, в провтином случае - false.</returns>
-        bool Stop();
+        void Stop();
         /// <summary>
         /// Пауза захвата.
         /// </summary>
-        /// <returns>В случае успеха возвращает true, в провтином случае - false.</returns>
-        bool Pause();
+        void Pause();
     }
-    
+
     [Flags]
     public enum CaptureInfObjects : int
     {
@@ -117,22 +114,45 @@ namespace Capture
         Fully = -1
     }
 
-    public abstract class CaptureCommon<TBitRate, TVideoCodec, TAreaKind> : 
+    public class CaptureSettings<TBitRate, TVideoCodec, TAreaKind> :
+        ICaptureSettings<TBitRate, TVideoCodec, TAreaKind>
+        where TBitRate : struct
+        where TAreaKind : struct
+        where TVideoCodec : struct
+    {
+        public string OutputPath { get; set; } = string.Empty;
+
+        public Rectangle Area { get; set; } = Rectangle.Empty;
+        public TAreaKind AreaKind { get; set; }
+
+        public TVideoCodec VideoCodec { get; set; }
+        public TBitRate Rate { get; set; }
+        public int Fps { get; set; }
+    }
+
+    public abstract class CaptureCommon<TBitRate, TVideoCodec, TAreaKind> :
         ICaptureController<TBitRate, TVideoCodec, TAreaKind>
         where TBitRate : struct
-        where TVideoCodec : struct
         where TAreaKind : struct
+        where TVideoCodec : struct
     {
-        public abstract ICaptureSettings<TBitRate, TVideoCodec, TAreaKind> Settings { get; }
+        public ICaptureSettings<TBitRate, TVideoCodec, TAreaKind> Settings { get; protected set; }
 
-        public abstract CaptureInfObjects Mods { get; }
+        public CaptureInfObjects Mods { get; set; } = CaptureInfObjects.None;
 
-        public abstract bool IsRecording { get; }
+        public virtual bool IsRecording { get; protected set; } = false;
 
-        protected Dictionary<CaptureInfObjects, ICaptureInfObject> _captureObjs { get; } = 
+        public ICaptureInfObject this[CaptureInfObjects key]
+        {
+            get { return _captureObjs.ContainsKey(key) ? _captureObjs[key] : null; }
+        }
+
+        protected Dictionary<CaptureInfObjects, ICaptureInfObject> _captureObjs { get; } =
                 new Dictionary<CaptureInfObjects, ICaptureInfObject>();
 
-        public virtual void GetFrame(object sender, ref Bitmap frame)
+        protected abstract void MakeGraphics(Graphics graphics);
+
+        public virtual void GetFrame(object sender, Bitmap frame)
         {
             if (!IsRecording)
                 return;
@@ -147,13 +167,24 @@ namespace Capture
                     if ((Mods & item) == item && _captureObjs.ContainsKey(item))
                         _captureObjs[item]?.Draw(graphics, Settings.Area.Left, Settings.Area.Top);
                 }
-                //NewFrame?(graphics)
+                //Формируем изображение.
+                MakeGraphics(graphics);
             }
         }
 
-        public abstract bool Pause();
-        public abstract bool Start();
-        public abstract bool Stop();
+        /// <summary>
+        /// Остановка записи.
+        /// </summary>
+        public virtual void Pause() { IsRecording = false; }
+
+        /// <summary>
+        /// Запуск захвата.
+        /// </summary>
+        public virtual void Start() { IsRecording = true; }
+        /// <summary>
+        /// Остановка захвата.
+        /// </summary>
+        public virtual void Stop() { Pause(); }
     }
 
 

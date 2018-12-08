@@ -76,9 +76,11 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
+    <Compile Include="Model\AForge\AForgeCapture.cs" />
     <Compile Include="Model\Config.cs" />
     <Compile Include="Model\Keys\HotKey.cs" />
     <Compile Include="Model\AForge\CaptureWindow.cs" />
+    <Compile Include="Model\WinAPI.cs" />
     <Compile Include="ViewModel\Source\Converter\ConvertAttribute.cs" />
     <Compile Include="ViewModel\Source\Converter\EnumDescriptionTypeConverter.cs" />
     <Compile Include="Model\Contract.cs" />
