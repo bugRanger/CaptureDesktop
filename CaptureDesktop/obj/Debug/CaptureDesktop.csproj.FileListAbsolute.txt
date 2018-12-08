@@ -1,11 +1,5 @@
 C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\CaptureDesktop.exe
 C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\CaptureDesktop.pdb
-C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\AForge.Video.dll
-C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\AForge.Video.FFMPEG.dll
-C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\AForge.dll
-C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\AForge.Video.xml
-C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\AForge.Video.FFMPEG.xml
-C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\AForge.xml
 C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\obj\Debug\View\MainWindow.g.cs
 C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\obj\Debug\App.g.cs
 C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\obj\Debug\CaptureDesktop_MarkupCompile.cache
@@ -95,3 +89,31 @@ C:\Users\Hukuma\Downloads\CaptureDesktop\CaptureDesktop\obj\Debug\CaptureDesktop
 C:\Users\Hukuma\Downloads\CaptureDesktop\CaptureDesktop\obj\Debug\CaptureDesktop.csproj.GenerateResource.Cache
 C:\Users\Hukuma\Downloads\CaptureDesktop\CaptureDesktop\obj\Debug\CaptureDesktop.exe
 C:\Users\Hukuma\Downloads\CaptureDesktop\CaptureDesktop\obj\Debug\CaptureDesktop.pdb
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.Data.v16.1.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.Mvvm.v16.1.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.Pdf.v16.1.Core.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.Printing.v16.1.Core.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.Xpf.Core.v16.1.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.CodeParser.v16.1.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.Data.v16.1.xml
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.Mvvm.v16.1.xml
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.Pdf.v16.1.Core.xml
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.Printing.v16.1.Core.xml
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\DevExpress.Xpf.Core.v16.1.xml
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\de\DevExpress.Data.v16.1.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\es\DevExpress.Data.v16.1.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\ja\DevExpress.Data.v16.1.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\ru\DevExpress.Data.v16.1.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\de\DevExpress.Pdf.v16.1.Core.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\es\DevExpress.Pdf.v16.1.Core.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\ja\DevExpress.Pdf.v16.1.Core.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\ru\DevExpress.Pdf.v16.1.Core.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\de\DevExpress.Printing.v16.1.Core.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\es\DevExpress.Printing.v16.1.Core.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\ja\DevExpress.Printing.v16.1.Core.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\ru\DevExpress.Printing.v16.1.Core.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\de\DevExpress.Xpf.Core.v16.1.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\es\DevExpress.Xpf.Core.v16.1.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\ja\DevExpress.Xpf.Core.v16.1.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\bin\Debug\ru\DevExpress.Xpf.Core.v16.1.resources.dll
+C:\Users\Hukuma\Documents\Visual Studio 2015\Projects\CaptureDesktop\CaptureDesktop\obj\Debug\CaptureDesktop.csprojResolveAssemblyReference.cache

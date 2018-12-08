@@ -307,6 +307,7 @@ namespace CaptureDesktop.Model
         /// <param name="eventArgs"></param>
         private void NewFrame(object sender, NewFrameEventArgs eventArgs)
         {
+            //HINT> Получаем снимок экрана, всех???
             try
             {
                 //Проверяем состояние.
@@ -325,6 +326,7 @@ namespace CaptureDesktop.Model
                         //Формирование дорисовки к позиции курсора.
                         if (pci.flags == CURSOR_SHOWING)
                         {
+                            //Смещение при обрезке кадра.
                             int x = pci.ptScreenPos.x - _left;
                             int y = pci.ptScreenPos.y - _top;
                             int rX = 0;
@@ -365,6 +367,7 @@ namespace CaptureDesktop.Model
                         }
                     }
                     //Проверка флага(Обрезка кадра, в случае использования области).
+                    //Т.к. в потоке записи уже объявленна облесть в размер кадра.
                     if (IsSelectedArea)
                     {
                         //Обрезка кадра.

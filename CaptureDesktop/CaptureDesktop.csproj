@@ -78,13 +78,14 @@
     </ApplicationDefinition>
     <Compile Include="Model\Config.cs" />
     <Compile Include="Model\Keys\HotKey.cs" />
-    <Compile Include="Model\CaptureWindow.cs" />
-    <Compile Include="ViewModel\Converter\ConvertAttribute.cs" />
-    <Compile Include="ViewModel\Converter\EnumDescriptionTypeConverter.cs" />
-    <Compile Include="ViewModel\Markup\EnumBindingSourceExtension.cs" />
-    <Compile Include="ViewModel\Source\DelegateCommand.cs" />
-    <Compile Include="ViewModel\Source\DelegatePreCommand.cs" />
-    <Compile Include="Model\Form\TopForm.cs">
+    <Compile Include="Model\AForge\CaptureWindow.cs" />
+    <Compile Include="ViewModel\Source\Converter\ConvertAttribute.cs" />
+    <Compile Include="ViewModel\Source\Converter\EnumDescriptionTypeConverter.cs" />
+    <Compile Include="Model\Contract.cs" />
+    <Compile Include="ViewModel\Source\Markup\EnumBindingSourceExtension.cs" />
+    <Compile Include="ViewModel\Source\Command\DelegateCommand.cs" />
+    <Compile Include="ViewModel\Source\Command\DelegatePreCommand.cs" />
+    <Compile Include="View\TopForm.cs">
       <SubType>Form</SubType>
     </Compile>
     <Page Include="View\MainWindow.xaml">
@@ -95,7 +96,7 @@
       <DependentUpon>App.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Model\Capture.cs" />
+    <Compile Include="Model\AForge\Capture.cs" />
     <Compile Include="ViewModel\VmCapture.cs" />
     <Compile Include="View\MainWindow.xaml.cs">
       <DependentUpon>MainWindow.xaml</DependentUpon>
@@ -127,7 +128,9 @@
     </None>
     <AppDesigner Include="Properties\" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <Folder Include="Model\Accord\" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
