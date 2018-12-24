@@ -26,7 +26,7 @@ namespace CaptureDesktop.Model
         /// <summary>
         /// Путь до папки хранения.
         /// </summary>
-        string DirPath { get; }
+        string OutputPath { get; }
         /// <summary>
         /// Количество бит исп. для обработки данных.
         /// </summary>
@@ -73,7 +73,7 @@ namespace CaptureDesktop.Model
         /// <summary>
         /// Путь до папки хранения.
         /// </summary>
-        public string DirPath { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Templates), FolderName); } }
+        public string OutputPath { get { return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Templates), FolderName); } }
         /// <summary>
         /// Наименование файла.
         /// </summary>
@@ -216,7 +216,7 @@ namespace CaptureDesktop.Model
         /// <summary>
         /// Путь до папки хранения.
         /// </summary>
-        public string DirPath { get; set; }
+        public string OutputPath { get; set; }
         /// <summary>
         /// Наименование файла.
         /// </summary>
@@ -367,7 +367,7 @@ namespace CaptureDesktop.Model
                         }
                     }
                     //Проверка флага(Обрезка кадра, в случае использования области).
-                    //Т.к. в потоке записи уже объявленна облесть в размер кадра.
+                    //Т.к. в потоке записи уже объявлена область в размер кадра.
                     if (IsSelectedArea)
                     {
                         //Обрезка кадра.
@@ -509,7 +509,7 @@ namespace CaptureDesktop.Model
         /// <param name="options">Настройки</param>
         public void SetOptions(ICaptureOptions options)
         {
-            DirPath = options.DirPath;
+            OutputPath = options.OutputPath;
             Codec = options.Codec;
             Rate = options.Rate;
             Fps = options.Fps;
@@ -522,20 +522,20 @@ namespace CaptureDesktop.Model
         public bool StartAsync()
         {
             //Проверка пути.
-            if (string.IsNullOrEmpty(DirPath) || !Directory.Exists(Path.GetFullPath(DirPath)))
+            if (string.IsNullOrEmpty(OutputPath) || !Directory.Exists(Path.GetFullPath(OutputPath)))
             {
                 //Получаем базовый.
-                DirPath = CaptureDefault.Empty.DirPath;
+                OutputPath = CaptureDefault.Empty.OutputPath;
             }
             //Проверяем каталог.
-            if (!Directory.Exists(DirPath))
+            if (!Directory.Exists(OutputPath))
             {
-                Directory.CreateDirectory(DirPath);
+                Directory.CreateDirectory(OutputPath);
             }
             //Формируем имя файла.
             FileName = string.Format(@"{0}_{1}", Environment.UserName.ToUpper(), DateTime.Now.ToString("d_MMM_yyyy_HH_mm_ssff"));
             //Формируем путь.
-            FullName = Path.Combine(DirPath, Path.ChangeExtension(Path.GetFileNameWithoutExtension(FileName), FileExt));
+            FullName = Path.Combine(OutputPath, Path.ChangeExtension(Path.GetFileNameWithoutExtension(FileName), FileExt));
             try
             {
                 //Проверяем.

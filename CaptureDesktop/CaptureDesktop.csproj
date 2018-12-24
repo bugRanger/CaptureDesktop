@@ -45,7 +45,9 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\..\..\Downloads\AForge.NET Framework-2.2.5-(libs only)\Release\AForge.Video.FFMPEG.dll</HintPath>
     </Reference>
-    <Reference Include="DevExpress.Data.v16.1, Version=16.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
+    <Reference Include="DevExpress.Data.v16.1, Version=16.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL">
+      <Private>False</Private>
+    </Reference>
     <Reference Include="DevExpress.Mvvm.v16.1, Version=16.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.Pdf.v16.1.Core, Version=16.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
     <Reference Include="DevExpress.Printing.v16.1.Core, Version=16.1.6.0, Culture=neutral, PublicKeyToken=b88d1754d700e49a, processorArchitecture=MSIL" />
@@ -80,7 +82,10 @@
     <Compile Include="Model\Config.cs" />
     <Compile Include="Model\Keys\HotKey.cs" />
     <Compile Include="Model\AForge\CaptureWindow.cs" />
+    <Compile Include="Model\Objects\CursorCapture.cs" />
     <Compile Include="Model\WinAPI.cs" />
+    <Compile Include="ViewModel\AForge\VmAForgeCapture.cs" />
+    <Compile Include="ViewModel\Contract.cs" />
     <Compile Include="ViewModel\Source\Converter\ConvertAttribute.cs" />
     <Compile Include="ViewModel\Source\Converter\EnumDescriptionTypeConverter.cs" />
     <Compile Include="Model\Contract.cs" />
@@ -132,6 +137,7 @@
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Model\Accord\" />
+    <Folder Include="ViewModel\Accord\" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

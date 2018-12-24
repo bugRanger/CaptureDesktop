@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Markup;
 
-namespace CaptureDesktop.ViewModel
+namespace Sima.Common.WPF.Tools.Markup
 {
     public class EnumBindingSourceExtension : MarkupExtension
     {

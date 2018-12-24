@@ -11,6 +11,7 @@
             
              xmlns:PR="clr-namespace:Sima.Common.WPF.Tools.PropertyAttribute"
              xmlns:VM="clr-namespace:CaptureDesktop.ViewModel"
+             xmlns:VMAForge="clr-namespace:CaptureDesktop.ViewModel.AForge"
                      
              WindowStartupLocation="CenterOwner" 
              
@@ -50,6 +51,7 @@
     </dxmvvm:Interaction.Behaviors>
     <Window.DataContext>
         <VM:VmCapture />
+        <!--<VMAForge:VmAForgeCapture />-->
     </Window.DataContext>
     <Grid Margin="3,3">
         <Grid>
@@ -71,7 +73,24 @@
                 </Grid.RowDefinitions>
                 <dxe:ComboBoxEdit Grid.Row="0"
                                   EditValue="{Binding AreaKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                                   
-                                  ItemsSource="{dxe:EnumItemsSource EnumType=VM:ScreenKindEnum}">
+                                  ItemsSource="{dxe:EnumItemsSource EnumType={x:Type VM:ScreenKindDesc}}"
+                                  >                                        
+                    <!--<dxe:ComboBoxEdit.Style>
+                        <Style TargetType="{x:Type dxe:ComboBoxEdit}">
+                            <Style.Triggers>
+                                <DataTrigger Binding="{Binding AreaKind}" Value="{x:Type VM:ScreenKindDesc.}">
+                                    <Setter Property="ItemsSource">
+                                        <Setter.Value>
+                                            <dxe:EnumItemsSource EnumType="{x:Type VM:ScreenKindDesc}"/>
+                                        </Setter.Value>
+                                    </Setter>
+                                    --><!--<dxe:ComboBoxEdit.ItemsSource>
+                                        <dxe:EnumItemsSource EnumType="{x:Type VM:ScreenKindDesc}"/>
+                                    </dxe:ComboBoxEdit.ItemsSource>--><!--
+                                </DataTrigger>
+                            </Style.Triggers>
+                        </Style>
+                    </dxe:ComboBoxEdit.Style>-->
                     <dxe:ComboBoxEdit.Buttons>
                         <dxe:ButtonInfo GlyphKind="Edit" 
                                         Command="{Binding ClickSettingArea}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
@@ -91,10 +110,10 @@
                 </dxe:ComboBoxEdit>
                 <dxe:ComboBoxEdit Grid.Row="2" 
                                   EditValue="{Binding Rate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}" 
-                                  ItemsSource="{dxe:EnumItemsSource EnumType=VM:BitRateEnum}"/>
+                                  ItemsSource="{dxe:EnumItemsSource EnumType=VM:BitRateDesc}"/>
                 <dxe:ComboBoxEdit Grid.Row="3"
                                   EditValue="{Binding Codec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                      
-                                  ItemsSource="{dxe:EnumItemsSource EnumType=VM:VideoCodecEnum}"/>
+                                  ItemsSource="{dxe:EnumItemsSource EnumType=VM:VideoCodecDesc}"/>
                 <dxe:TextEdit EditValue="{Binding Fps}" Grid.Row="4" 
                               NullText="{Binding ConverterParameter=Fps, Converter={StaticResource PropertyDisplayNameConvert}}"/>
             </Grid>

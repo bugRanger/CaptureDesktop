@@ -23,7 +23,7 @@ namespace Capture
         string OutputPath { get; set; }
 
         /// <summary>
-        /// Выбраная область.
+        /// Выбранная область.
         /// </summary>
         Rectangle Area { get; set; }
         /// <summary>
@@ -61,7 +61,7 @@ namespace Capture
         /// <summary>
         /// Настройки захвата.
         /// </summary>
-        ICaptureSettings<TBitRate, TVideoCodec, TAreaKind> Settings { get; }
+        CaptureSettings<TBitRate, TVideoCodec, TAreaKind> Settings { get; }
 
         /// <summary>
         /// Режим информирования.
@@ -107,19 +107,21 @@ namespace Capture
         /// <summary>
         /// Базовая информация.
         /// </summary>
-        Default = Cursor,
+        Default = Cursor | Keys,
         /// <summary>
         /// Полная информация.
         /// </summary>
         Fully = -1
     }
 
-    public class CaptureSettings<TBitRate, TVideoCodec, TAreaKind> :
+    public abstract class CaptureSettings<TBitRate, TVideoCodec, TAreaKind> :
         ICaptureSettings<TBitRate, TVideoCodec, TAreaKind>
         where TBitRate : struct
         where TAreaKind : struct
         where TVideoCodec : struct
     {
+        public abstract ICaptureSettings<TBitRate, TVideoCodec, TAreaKind> Default { get; }
+
         public string OutputPath { get; set; } = string.Empty;
 
         public Rectangle Area { get; set; } = Rectangle.Empty;
@@ -136,21 +138,32 @@ namespace Capture
         where TAreaKind : struct
         where TVideoCodec : struct
     {
-        public ICaptureSettings<TBitRate, TVideoCodec, TAreaKind> Settings { get; protected set; }
+        public CaptureSettings<TBitRate, TVideoCodec, TAreaKind> Settings { get; protected set; }
 
-        public CaptureInfObjects Mods { get; set; } = CaptureInfObjects.None;
+        public CaptureInfObjects Mods { get; set; } = CaptureInfObjects.Default;
 
         public virtual bool IsRecording { get; protected set; } = false;
 
         public ICaptureInfObject this[CaptureInfObjects key]
         {
             get { return _captureObjs.ContainsKey(key) ? _captureObjs[key] : null; }
+            set { _captureObjs[key] = value; }
         }
 
         protected Dictionary<CaptureInfObjects, ICaptureInfObject> _captureObjs { get; } =
                 new Dictionary<CaptureInfObjects, ICaptureInfObject>();
 
-        protected abstract void MakeGraphics(Graphics graphics);
+        protected virtual void MakeGraphics(Graphics graphics)
+        {
+            if (Mods == CaptureInfObjects.None)
+                return;
+
+            foreach (var item in Enum.GetValues(typeof(CaptureInfObjects)).Cast<CaptureInfObjects>())
+            {
+                if ((Mods & item) == item && _captureObjs.ContainsKey(item))
+                    _captureObjs[item]?.Draw(graphics, Settings.Area.Left, Settings.Area.Top);
+            }
+        }
 
         public virtual void GetFrame(object sender, Bitmap frame)
         {
@@ -161,12 +174,6 @@ namespace Capture
             {
                 graphics.CompositingQuality = CompositingQuality.HighSpeed;
                 graphics.SmoothingMode = SmoothingMode.HighSpeed;
-
-                foreach (var item in Enum.GetValues(typeof(CaptureInfObjects)).Cast<CaptureInfObjects>())
-                {
-                    if ((Mods & item) == item && _captureObjs.ContainsKey(item))
-                        _captureObjs[item]?.Draw(graphics, Settings.Area.Left, Settings.Area.Top);
-                }
                 //Формируем изображение.
                 MakeGraphics(graphics);
             }

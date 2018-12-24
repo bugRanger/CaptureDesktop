@@ -38,30 +38,32 @@ namespace CaptureDesktop.Model.AForge
         /// <summary>
         /// Захват всех источников.
         /// </summary>
-        skAll,
+        All,
         /// <summary>
         /// Захват области.
         /// </summary>
-        skArea,
+        Area,
         /// <summary>
         /// Захват окна.
         /// </summary>
-        skWindow,
+        Window,
         /// <summary>
         /// Захват устройства.
         /// </summary>
-        skDevice
+        Device
     }
 
     public class AForgeCaptureSettings : CaptureSettings<BitRate, VideoCodec, AreaKind>
     {
-        public static AForgeCaptureSettings Default => new AForgeCaptureSettings()
+        public override ICaptureSettings<BitRate, VideoCodec, AreaKind> Default { get { return Empty; } }
+
+        public static AForgeCaptureSettings Empty => new AForgeCaptureSettings()
         {
             OutputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Templates),
                 System.Reflection.Assembly.GetExecutingAssembly().GetName().Name),
 
             Area = GetScreenAll(),
-            AreaKind = AreaKind.skAll,
+            AreaKind = AreaKind.All,
 
             VideoCodec = VideoCodec.MPEG4,
             Rate = BitRate._5000kbit,
@@ -78,70 +80,74 @@ namespace CaptureDesktop.Model.AForge
         }
     }
 
+    /// <summary>
+    /// Захват изображения.
+    /// </summary>
     public class AForgeCapture : CaptureCommon<BitRate, VideoCodec, AreaKind>
     {
+        /// <summary>
+        /// Конструктор.
+        /// </summary>
         public AForgeCapture()
         {
-            _writer = new VideoFileWriter();
+            _writer = new VideoFileWriter();            
         }
+        /// <summary>
+        /// Конструктор.
+        /// </summary>
+        /// <param name="settings">Настройки</param>
         public AForgeCapture(AForgeCaptureSettings settings) : this()
         {
             Settings = settings;
         }
 
+        /// <summary>
+        /// Поддерживаемое расширение.
+        /// </summary>
         private string FileExt => ".avi";
 
         private Stopwatch _watch { get; set; }
         private VideoFileWriter _writer { get; set; }
         private ScreenCaptureStream _streamVideo { get; set; }
-        
-        protected override void MakeGraphics(Graphics graphics)
-        {
-        }
 
         public override void GetFrame(object sender, Bitmap frame)
         {
             base.GetFrame(sender, frame);
-
+            //Проверка флага.
             if (IsRecording)
-            {
-                //Запись в поток.
-                _writer.WriteVideoFrame(frame);
-            }
-            else
-            {
-                //Останавливаем.
-                _watch.Reset();
-                Thread.Sleep(500);
-                _streamVideo.SignalToStop();
-                Thread.Sleep(500);
-                _writer.Close();
-            }
+                _writer.WriteVideoFrame(frame);//Запись в поток.
         }
 
         /// <summary>
-        /// Вызываем метод записи в поток.
+        /// Запуск захвата видео в поток.
         /// </summary>
         /// <returns>В случае успеха операции вернет true, в противном случае - false.</returns>
         protected bool StartAsyncEx()
         {
-            try
-            {
-                _streamVideo = new ScreenCaptureStream(Settings.Area);
-                _streamVideo.NewFrame += (s, e) => GetFrame(s, e.Frame);
-                _streamVideo.Start();
-                _watch = new Stopwatch();
-                _watch.Start();
-                //Возвращаем результат.
-                return true;
-            }
-            catch (Exception)
-            {
-                base.Stop();
-
-                throw;
-            }
+            _streamVideo = new ScreenCaptureStream(
+                //HINT> Перехват для базовых значений в случае отсутствия.
+                Settings.Area == Rectangle.Empty ? 
+                Settings.Default.Area : Settings.Area);
+            _streamVideo.NewFrame += (s, e) => GetFrame(s, e.Frame);
+            _streamVideo.Start();
+            _watch = new Stopwatch();
+            _watch.Start();
+            //Возвращаем результат.
+            return true;
         }
+        /// <summary>
+        /// Остановка захвата видео в поток.
+        /// </summary>
+        protected void StopAsyncEx()
+        {
+            //Останавливаем.
+            _watch?.Reset();
+            Thread.Sleep(500);
+            _streamVideo?.SignalToStop();
+            Thread.Sleep(500);
+            _writer?.Close();
+        }
+
         /// <summary>
         /// Запускаем запись.
         /// </summary>
@@ -152,7 +158,7 @@ namespace CaptureDesktop.Model.AForge
             if (string.IsNullOrEmpty(Settings.OutputPath) || !Directory.Exists(Path.GetFullPath(Settings.OutputPath)))
             {
                 //Получаем базовый.
-                Settings.OutputPath = AForgeCaptureSettings.Default.OutputPath;
+                Settings.OutputPath = Settings.Default.OutputPath;
             }
             //Проверяем каталог.
             if (!Directory.Exists(Settings.OutputPath))
@@ -167,20 +173,14 @@ namespace CaptureDesktop.Model.AForge
                 Path.ChangeExtension(Path.GetFileNameWithoutExtension(fileName), FileExt));
             try
             {
-                ////Проверяем.
-                //if (!HasArea())
-                //{
-                //    throw new Exception("Not selected area!");
-                //}
                 //Открываем поток на запись.
                 _writer.Open(
                     fullName,
-                    Settings.Area.Width,
-                    Settings.Area.Height,
-                    //Перехват для базовых значений в случае отсутствия.
-                    Settings.Fps == default(int) ? AForgeCaptureSettings.Default.Fps : Settings.Fps,
-                    Settings.VideoCodec == VideoCodec.Default ? AForgeCaptureSettings.Default.VideoCodec : Settings.VideoCodec,
-                    (int)(Settings.Rate == default(int) ? AForgeCaptureSettings.Default.Rate : Settings.Rate));
+                    Settings.Area.Width == default(int) ? Settings.Default.Area.Width : Settings.Area.Width,
+                    Settings.Area.Height == default(int) ? Settings.Default.Area.Height : Settings.Area.Height,
+                    Settings.Fps == default(int) ? Settings.Default.Fps : Settings.Fps,
+                    Settings.VideoCodec == VideoCodec.Default ? Settings.Default.VideoCodec : Settings.VideoCodec,
+                    (int)(Settings.Rate == default(int) ? Settings.Default.Rate : Settings.Rate));
 
                 //Запускаем запись.
                 if (StartAsyncEx())
@@ -188,11 +188,20 @@ namespace CaptureDesktop.Model.AForge
             }
             catch (Exception)
             {
-                _writer.Close();
+                //Останавливаем запись.
+                StopAsyncEx();
                 base.Stop();
 
                 throw;
             }
+        }
+        /// <summary>
+        /// Останавливаем запись.
+        /// </summary>
+        public override void Stop()
+        {
+            base.Stop();
+            this.StopAsyncEx();
         }
     }
 }

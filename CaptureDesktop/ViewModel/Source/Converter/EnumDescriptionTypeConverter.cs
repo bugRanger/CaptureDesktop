@@ -2,7 +2,7 @@
 using System.ComponentModel;
 using System.Reflection;
 
-namespace CaptureDesktop.Model
+namespace Sima.Common.WPF.Tools.PropertyAttribute
 {
     public class EnumDescriptionTypeConverter : EnumConverter
     {

@@ -12,18 +12,19 @@ namespace CaptureDesktop.ViewModel
     using static Model.Capture;
 
     using Model;
-    using Sima.Common.WPF.Tools.Command;
     using System.Windows.Forms;
     using System.Windows;
     using System.Diagnostics;
     using System.IO;
     using DevExpress.Xpf.Core;
+    using Sima.Common.WPF.Tools.Command;
+    using Sima.Common.WPF.Tools.PropertyAttribute;
 
     /// <summary>
     /// Количество бит используемых для обработки данных в единицу времени.
     /// </summary>
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
-    public enum BitRateEnum : int
+    public enum BitRateDesc : int
     {
         [Description("50 Кбит")]
         _50kbit = BitRate._50kbit,
@@ -46,7 +47,7 @@ namespace CaptureDesktop.ViewModel
     /// Тип захвата видео.
     /// </summary>
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
-    public enum ScreenKindEnum : int
+    public enum ScreenKindDesc : int
     {
         /// <summary>
         /// Захват всех источников.
@@ -68,7 +69,7 @@ namespace CaptureDesktop.ViewModel
     /// Тип используемого сжатия.
     /// </summary>
     [TypeConverter(typeof(EnumDescriptionTypeConverter))]
-    public enum VideoCodecEnum
+    public enum VideoCodecDesc
     {
         [Description("По умолчанию")]
         Default = VideoCodec.Default,
@@ -89,12 +90,13 @@ namespace CaptureDesktop.ViewModel
         {
             _capture.Recording += (s, e) =>
             {
-                OnPropertyChanged(nameof(DirPath));
+                OnPropertyChanged(nameof(OutputPath));
                 OnPropertyChanged(nameof(FileName));
                 OnPropertyChanged(nameof(IsRecordBlock));
             };
             _capture.Recorded += (s, e) =>
             {
+                //HINT> Следует выделять поток на ожидание завершения работы с файлов(!IsRecording), для начало конвертации.
                 if (true)
                 {
                     // -c:v libx264 -c:a aac -strict experimental -b:a 192K 
@@ -102,7 +104,7 @@ namespace CaptureDesktop.ViewModel
 
                     string options = " -c:v libx264 -c:a aac -strict experimental -b:a 192K ";//flv
                     //string options = "-s 1280x720 -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 10";//swf
-                    string fileargs = $"-i \"{ _capture.FullName}\" " + options + $" \"{Path.Combine(_capture.DirPath, _capture.FileName)}.flv\" -y";
+                    string fileargs = $"-i \"{ _capture.FullName}\" " + options + $" \"{Path.Combine(_capture.OutputPath, _capture.FileName)}.flv\" -y";
                     System.Diagnostics.Process p = new System.Diagnostics.Process();
                     p.StartInfo.FileName = "ffmpeg.exe";
                     p.StartInfo.Arguments = fileargs;
@@ -131,10 +133,10 @@ namespace CaptureDesktop.ViewModel
         /// <summary>
         /// Путь до папки хранения.
         /// </summary>
-        public string DirPath
+        public string OutputPath
         {
-            get { return _capture.DirPath; }
-            set { _capture.DirPath = value; OnPropertyChanged(nameof(DirPath)); }
+            get { return _capture.OutputPath; }
+            set { _capture.OutputPath = value; OnPropertyChanged(nameof(OutputPath)); }
         }
         /// <summary>
         /// Наименование файла.
@@ -144,12 +146,12 @@ namespace CaptureDesktop.ViewModel
         {
             get { return (ScreenKind)AreaKind; }
         }
-        private ScreenKindEnum _areaKind = (ScreenKindEnum)CaptureDefault.Empty.AreaKind;
+        private ScreenKindDesc _areaKind = (ScreenKindDesc)CaptureDefault.Empty.AreaKind;
         /// <summary>
         /// Тип захвата.
         /// </summary>
         [DisplayName("Область")]
-        public ScreenKindEnum AreaKind
+        public ScreenKindDesc AreaKind
         {
             get { return _areaKind; }
             set
@@ -176,12 +178,12 @@ namespace CaptureDesktop.ViewModel
         {
             get { return (BitRate)Rate; }
         }
-        private BitRateEnum _rate = (BitRateEnum)CaptureDefault.Empty.Rate;
+        private BitRateDesc _rate = (BitRateDesc)CaptureDefault.Empty.Rate;
         /// <summary>
         /// Количество бит исп. для обработки данных.
         /// </summary>
         [DisplayName("Скорость")]
-        public BitRateEnum Rate
+        public BitRateDesc Rate
         {
             get { return _rate; }
             set
@@ -194,12 +196,12 @@ namespace CaptureDesktop.ViewModel
         {
             get { return (VideoCodec)Codec; }
         }
-        private VideoCodecEnum _codec = (VideoCodecEnum)CaptureDefault.Empty.Codec;
+        private VideoCodecDesc _codec = (VideoCodecDesc)CaptureDefault.Empty.Codec;
         /// <summary>
         /// Тип используемого сжатия.
         /// </summary>
         [DisplayName("Сжатие")]
-        public VideoCodecEnum Codec
+        public VideoCodecDesc Codec
         {
             get { return _codec; }
             set
@@ -278,7 +280,7 @@ namespace CaptureDesktop.ViewModel
                     if (dialog.ShowDialog() == DialogResult.OK)
                     {
                         //Присвоение результата.
-                        DirPath = dialog.SelectedPath;
+                        OutputPath = dialog.SelectedPath;
                     }
                 });
             }
@@ -321,7 +323,7 @@ namespace CaptureDesktop.ViewModel
                 {
                     return
                         !_capture.HasRecord()
-                        && AreaKind == ScreenKindEnum.skArea;
+                        && AreaKind == ScreenKindDesc.skArea;
                 });
             }
         }
