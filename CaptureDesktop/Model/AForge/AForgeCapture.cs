@@ -17,7 +17,7 @@ using System.Windows.Forms;
 namespace CaptureDesktop.Model.AForge
 {
     /// <summary>
-    /// Количество бит используемых для обработки данных в единицу времени.
+    /// Количество1 бит используемых для обработки данных в единицу времени.
     /// </summary>
     public enum BitRate : int
     {
