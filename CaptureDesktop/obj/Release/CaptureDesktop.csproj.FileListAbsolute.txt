@@ -1,6 +1,0 @@
-D:\Projects\_work\CaptureDesktop\CaptureDesktop\bin\Release\CaptureDesktop.exe.config
-D:\Projects\_work\CaptureDesktop\CaptureDesktop\obj\Release\View\MainWindow.g.cs
-D:\Projects\_work\CaptureDesktop\CaptureDesktop\obj\Release\App.g.cs
-D:\Projects\_work\CaptureDesktop\CaptureDesktop\obj\Release\GeneratedInternalTypeHelper.g.cs
-D:\Projects\_work\CaptureDesktop\CaptureDesktop\obj\Release\CaptureDesktop_MarkupCompile.cache
-D:\Projects\_work\CaptureDesktop\CaptureDesktop\obj\Release\CaptureDesktop_MarkupCompile.lref
