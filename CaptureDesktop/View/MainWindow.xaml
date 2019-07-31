@@ -11,7 +11,7 @@
             
              xmlns:PR="clr-namespace:Sima.Common.WPF.Tools.PropertyAttribute"
              xmlns:VM="clr-namespace:CaptureDesktop.ViewModel"
-             xmlns:VMAForge="clr-namespace:CaptureDesktop.ViewModel.AForge"
+             xmlns:VMAForge="clr-namespace:CaptureDesktop.ViewModel.AForgeAtapter"
                      
              WindowStartupLocation="CenterOwner" 
              

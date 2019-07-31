@@ -1,20 +1,13 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Windows;
-using System.Windows.Forms;
-using System.Windows.Input;
-using System.ComponentModel;
-using System.Collections.Generic;
-using System.Drawing;
-
-using System.Diagnostics;
-
-using AForge.Video.FFMPEG;
-
-namespace CaptureDesktop.ViewModel.AForge
+﻿namespace CaptureDesktop.ViewModel.AForgeAtapter
 {
+    using System;
+    using System.Windows;
+    using System.Windows.Input;
+    using System.ComponentModel;
+    using System.Drawing;
+
+    using AForge.Video.FFMPEG;
+
     using Capture;
 
     using Model;
@@ -96,11 +89,94 @@ namespace CaptureDesktop.ViewModel.AForge
     }
 
     public class VmAForgeCapture : ICaptureSettings<BitRateDesc, VideoCodecDesc, AreaKindDesc>, INotifyPropertyChanged
-    {
+    {        
+        #region Fields
+
+        private HotKey _hotKey = null;
+        private AForgeCapture _capture { get; } = new AForgeCapture(new AForgeCaptureSettings());
+
+        #endregion Fields
+
+        #region Properties
+
+        public string OutputPath
+        {
+            get { return _capture.Settings.OutputPath; }
+            set { _capture.Settings.OutputPath = value; OnPropertyChanged(nameof(OutputPath)); }
+        }
+
+        public Rectangle Area
+        {
+            get { return _capture.Settings.Area; }
+            set { _capture.Settings.Area = value; OnPropertyChanged(nameof(Area)); }
+        }
+
+        public AreaKindDesc AreaKind
+        {
+            get { return (AreaKindDesc)_capture.Settings.AreaKind; }
+            set { _capture.Settings.AreaKind = (AreaKind)value; OnPropertyChanged(nameof(AreaKind)); }
+        }
+
+        public BitRateDesc Rate
+        {
+            get { return (BitRateDesc)_capture.Settings.Rate; }
+            set { _capture.Settings.Rate = (BitRate)value; OnPropertyChanged(nameof(Rate)); }
+        }
+
+        public VideoCodecDesc VideoCodec
+        {
+            get { return (VideoCodecDesc)_capture.Settings.VideoCodec; }
+            set { _capture.Settings.VideoCodec = (VideoCodec)value; OnPropertyChanged(nameof(VideoCodec)); }
+        }
+
+        public int Fps
+        {
+            get { return _capture.Settings.Fps; }
+            set { _capture.Settings.Fps = value; OnPropertyChanged(nameof(Fps)); }
+        }
+
+        #endregion Properties
+
+        #region Constructors
+
         public VmAForgeCapture()
         {
             _capture[CaptureInfObjects.Cursor] = new CursorCapture();
             //SetEvent();
+        }
+
+        #endregion Constructors
+
+        #region Methods
+
+        /// <summary>
+        /// Получить ссылку на окно.
+        /// </summary>
+        /// <param name="sender">Объект содержащий ссылку на окно</param>
+        /// <returns>В случае успеха вернет ссылку на окно, в противном случае - null.</returns>
+        public Window GetWindow(object sender)
+        {
+            //Получаем ссылку на родительское окно(если оно было указанно).
+            return sender is Window ? (Window)sender :
+                sender is DependencyObject ? Window.GetWindow((DependencyObject)sender) : null;
+        }
+        private void OnHotKeyFromStartOrStop(HotKey hotKey)
+        {
+            //CommandRecord?.Execute(hotKey is HotKeyWnd ? (hotKey as HotKeyWnd).Owner : null);
+        }
+
+        /// <summary>
+        /// Подписка на событие уведомления об изменениях свойств.
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+        /// <summary>
+        /// Вызов уведомления об изменениях свойств. 
+        /// </summary>
+        /// <param name="prop">Наименование свойства.</param>
+        protected void OnPropertyChanged(string prop)
+        {
+            PropertyChangedEventHandler handler = PropertyChanged;
+            handler?.Invoke(this, new PropertyChangedEventArgs(prop));
         }
 
         protected void SetEvent()
@@ -143,74 +219,9 @@ namespace CaptureDesktop.ViewModel.AForge
             //};
         }
 
-        private HotKey _hotKey = null;
-        private AForgeCapture _capture { get; } = new AForgeCapture(new AForgeCaptureSettings());
+        #endregion Methods
 
-        public string OutputPath
-        {
-            get { return _capture.Settings.OutputPath; }
-            set { _capture.Settings.OutputPath = value; OnPropertyChanged(nameof(OutputPath)); }
-        }
-
-        public Rectangle Area
-        {
-            get { return _capture.Settings.Area; }
-            set { _capture.Settings.Area = value; OnPropertyChanged(nameof(Area)); }
-        }
-
-        public AreaKindDesc AreaKind
-        {
-            get { return (AreaKindDesc)_capture.Settings.AreaKind; }
-            set { _capture.Settings.AreaKind = (AreaKind)value; OnPropertyChanged(nameof(AreaKind)); }
-        }
-
-        public BitRateDesc Rate
-        {
-            get { return (BitRateDesc)_capture.Settings.Rate; }
-            set { _capture.Settings.Rate = (BitRate)value; OnPropertyChanged(nameof(Rate)); }
-        }
-
-        public VideoCodecDesc VideoCodec
-        {
-            get { return (VideoCodecDesc)_capture.Settings.VideoCodec; }
-            set { _capture.Settings.VideoCodec = (VideoCodec)value; OnPropertyChanged(nameof(VideoCodec)); }
-        }
-
-        public int Fps
-        {
-            get { return _capture.Settings.Fps; }
-            set { _capture.Settings.Fps = value; OnPropertyChanged(nameof(Fps)); }
-        }
-
-        /// <summary>
-        /// Получить ссылку на окно.
-        /// </summary>
-        /// <param name="sender">Объект содержащий ссылку на окно</param>
-        /// <returns>В случае успеха вернет ссылку на окно, в противном случае - null.</returns>
-        public Window GetWindow(object sender)
-        {
-            //Получаем ссылку на родительское окно(если оно было указанно).
-            return sender is Window ? (Window)sender :
-                sender is DependencyObject ? Window.GetWindow((DependencyObject)sender) : null;
-        }
-        private void OnHotKeyFromStartOrStop(HotKey hotKey)
-        {
-            //CommandRecord?.Execute(hotKey is HotKeyWnd ? (hotKey as HotKeyWnd).Owner : null);
-        }
-
-        /// <summary>
-        /// Подписка на событие уведомления об изменениях свойств.
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
-        /// <summary>
-        /// Вызов уведомления об изменениях свойств. 
-        /// </summary>
-        /// <param name="prop">Наименование свойства.</param>
-        protected void OnPropertyChanged(string prop)
-        {
-            PropertyChangedEventHandler handler = PropertyChanged;
-            handler?.Invoke(this, new PropertyChangedEventArgs(prop));
-        }
+        #region Commands
 
         //[DisplayName("Выбрать")]
         //public ICommand ClickSelectDir
@@ -361,6 +372,8 @@ namespace CaptureDesktop.ViewModel.AForge
         //            });
         //    }
         //}
+
+        #endregion Commands
 
     }
 }
