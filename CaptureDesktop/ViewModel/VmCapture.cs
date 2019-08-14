@@ -12,18 +12,18 @@ namespace CaptureDesktop.ViewModel
     using static Model.Capture;
 
     using Model;
+
+    using System.IO;
     using System.Windows.Forms;
     using System.Windows;
-    using System.Diagnostics;
-    using System.IO;
-    using DevExpress.Xpf.Core;
-    using Sima.Common.WPF.Tools.Command;
-    using Sima.Common.WPF.Tools.PropertyAttribute;
+
+    using Common.WPF.Tools.Command;
+    using Common.WPF.Tools.PropertyAttribute;
 
     /// <summary>
     /// Количество бит используемых для обработки данных в единицу времени.
     /// </summary>
-    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    [TypeConverter(typeof(EnumDescriptionConverter))]
     public enum BitRateDesc : int
     {
         [Description("50 Кбит")]
@@ -46,7 +46,7 @@ namespace CaptureDesktop.ViewModel
     /// <summary>
     /// Тип захвата видео.
     /// </summary>
-    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    [TypeConverter(typeof(EnumDescriptionConverter))]
     public enum ScreenKindDesc : int
     {
         /// <summary>
@@ -68,7 +68,7 @@ namespace CaptureDesktop.ViewModel
     /// <summary>
     /// Тип используемого сжатия.
     /// </summary>
-    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    [TypeConverter(typeof(EnumDescriptionConverter))]
     public enum VideoCodecDesc
     {
         [Description("По умолчанию")]
@@ -174,6 +174,13 @@ namespace CaptureDesktop.ViewModel
                 OnPropertyChanged(nameof(DeviceName));
             }
         }
+
+        private string[] _deviceArray;
+        public string[] DeviceArray
+        {
+            get { return _deviceArray; }
+            set { _deviceArray = value; OnPropertyChanged(nameof(DeviceArray)); }
+        }
         BitRate ICaptureOptions.Rate
         {
             get { return (BitRate)Rate; }
@@ -230,12 +237,6 @@ namespace CaptureDesktop.ViewModel
         /// </summary>
         public bool IsRecordBlock => !_capture.HasRecord();
 
-        private string[] _deviceArray;
-        public string[] DeviceArray
-        {
-            get { return _deviceArray; }
-            set { _deviceArray = value; OnPropertyChanged(nameof(DeviceArray)); }
-        }
 
         /// <summary>
         /// Получить ссылку на окно.
@@ -347,7 +348,7 @@ namespace CaptureDesktop.ViewModel
                         }
                         catch (Exception ex)
                         {
-                            DXMessageBox.Show(ex.Message, ex.Source, MessageBoxButton.OK, MessageBoxImage.Warning);
+                            //DXMessageBox.Show(ex.Message, ex.Source, MessageBoxButton.OK, MessageBoxImage.Warning);
                         }
 
                     },

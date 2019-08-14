@@ -6,7 +6,7 @@ using System.Reflection;
 using System.Globalization;
 using System.ComponentModel;
 
-namespace Sima.Common.WPF.Tools.PropertyAttribute
+namespace Common.WPF.Tools.PropertyAttribute
 {
     /// <summary>
     /// Извлечение данных о свойстве из отслеживаемых полей.
@@ -19,19 +19,19 @@ namespace Sima.Common.WPF.Tools.PropertyAttribute
             if (value == null)
                 return Binding.DoNothing;
 
-            string propertyName = parameter as string;
-            if (String.IsNullOrEmpty(propertyName))
-                return new ArgumentNullException("parameter").ToString();
+            var propertyName = parameter as string;
+            if (string.IsNullOrEmpty(propertyName))
+                return new ArgumentNullException(nameof(parameter)).ToString();
 
             Type type = value.GetType();
 
             PropertyInfo property = type.GetProperty(propertyName, BindingFlags.Public | BindingFlags.Instance);
             if (property == null)
-                return new ArgumentOutOfRangeException("parameter", parameter,
+                return new ArgumentOutOfRangeException(nameof(parameter), parameter,
                     "Property \"" + propertyName + "\" not found in type \"" + type.Name + "\".").ToString();
 
             if (!property.IsDefined(typeof(T), true))
-                return new ArgumentOutOfRangeException("parameter", parameter,
+                return new ArgumentOutOfRangeException(nameof(parameter), parameter,
                     "Property \"" + propertyName + "\" of type \"" + type.Name + "\"" +
                     " has no associated Description attribute.").ToString();
 
@@ -45,26 +45,26 @@ namespace Sima.Common.WPF.Tools.PropertyAttribute
     }
     
     /// <summary>
-    /// Извлекаем данные из аттрибута DisplayNameAttribute.
+    /// Извлекаем данные из атрибута <c>DisplayNameAttribute</c>.
     /// </summary>
     public sealed class PropertyDisplayNameConvert : PropertyAttributeConverter<DisplayNameAttribute>
     {
         public override object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             object result = base.Convert(value, targetType, parameter, culture);            
-            return result is DisplayNameAttribute ? ((DisplayNameAttribute)result).DisplayName : null;
+            return result is DisplayNameAttribute attribute ? attribute.DisplayName : null;
         }
     }
 
     /// <summary>
-    /// Извлекаем данные из аттрибута DescriptionAttribute.
+    /// Извлекаем данные из атрибута <c>DescriptionAttribute</c>.
     /// </summary>
     public sealed class PropertyDescriptionConvert : PropertyAttributeConverter<DescriptionAttribute>
     {
         public override object Convert(object value, Type targetType, object parameter, System.Globalization.CultureInfo culture)
         {
             object result = base.Convert(value, targetType, parameter, culture);
-            return result is DescriptionAttribute ? ((DescriptionAttribute)result).Description : null;
+            return result is DescriptionAttribute attribute ? attribute.Description : null;
         }
     }
 }

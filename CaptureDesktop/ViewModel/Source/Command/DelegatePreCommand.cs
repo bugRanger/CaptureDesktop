@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Windows.Input;
 
-namespace Sima.Common.WPF.Tools.Command
+namespace Common.WPF.Tools.Command
 {
     /// <summary>
     /// Делегат условия доступности обратного вызова команды.

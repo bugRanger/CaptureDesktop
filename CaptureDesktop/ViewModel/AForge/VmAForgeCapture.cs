@@ -1,12 +1,12 @@
-﻿namespace CaptureDesktop.ViewModel.AForgeAtapter
-{
-    using System;
-    using System.Windows;
-    using System.Windows.Input;
-    using System.ComponentModel;
-    using System.Drawing;
+﻿using System;
+using System.Drawing;
+using System.Windows;
+using System.Windows.Input;
+using System.ComponentModel;
 
-    using AForge.Video.FFMPEG;
+namespace CaptureDesktop.ViewModel.AForge
+{
+    using System.IO;
 
     using Capture;
 
@@ -14,15 +14,17 @@
     using Model.AForge;
     using Model.CursorCapture;
 
-    using DevExpress.Xpf.Core;
+    using Common.WPF.Tools.Command;
+    using Common.WPF.Tools.PropertyAttribute;
 
-    using Sima.Common.WPF.Tools.Command;
-    using Sima.Common.WPF.Tools.PropertyAttribute;
+    using global::AForge.Video.FFMPEG;
+    using System.Windows.Forms;
+    using System.Linq;
 
     /// <summary>
     /// Количество бит используемых для обработки данных в единицу времени.
     /// </summary>
-    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    [TypeConverter(typeof(EnumDescriptionConverter))]
     public enum BitRateDesc : int
     {
         [Description("50 Кбит")]
@@ -45,7 +47,7 @@
     /// <summary>
     /// Тип захвата видео.
     /// </summary>
-    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    [TypeConverter(typeof(EnumDescriptionConverter))]
     public enum AreaKindDesc : int
     {
         /// <summary>
@@ -72,7 +74,7 @@
     /// <summary>
     /// Тип используемого сжатия.
     /// </summary>
-    [TypeConverter(typeof(EnumDescriptionTypeConverter))]
+    [TypeConverter(typeof(EnumDescriptionConverter))]
     public enum VideoCodecDesc
     {
         [Description("По умолчанию")]
@@ -89,51 +91,90 @@
     }
 
     public class VmAForgeCapture : ICaptureSettings<BitRateDesc, VideoCodecDesc, AreaKindDesc>, INotifyPropertyChanged
-    {        
+    {
         #region Fields
 
         private HotKey _hotKey = null;
+        private string _deviceName = CaptureDefault.Empty.DeviceName;
         private AForgeCapture _capture { get; } = new AForgeCapture(new AForgeCaptureSettings());
 
         #endregion Fields
 
         #region Properties
 
+        /// <summary>
+        /// Наименование устройства.
+        /// </summary>
+        [DisplayName("Устройство")]
+        public string DeviceName
+        {
+            get => _deviceName;
+            set
+            {
+                _deviceName = value;
+                OnPropertyChanged(nameof(DeviceName));
+            }
+        }
+
+        private string[] _deviceArray;
+        public string[] DeviceArray
+        {
+            get => _deviceArray;
+            set
+            {
+                _deviceArray = value;
+                OnPropertyChanged(nameof(DeviceArray));
+            }
+        }
+
         public string OutputPath
         {
-            get { return _capture.Settings.OutputPath; }
-            set { _capture.Settings.OutputPath = value; OnPropertyChanged(nameof(OutputPath)); }
+            get => _capture.Settings.OutputPath;
+            set
+            {
+                _capture.Settings.OutputPath = value; OnPropertyChanged(nameof(OutputPath));
+            }
         }
 
         public Rectangle Area
         {
-            get { return _capture.Settings.Area; }
+            get => _capture.Settings.Area;
             set { _capture.Settings.Area = value; OnPropertyChanged(nameof(Area)); }
         }
 
         public AreaKindDesc AreaKind
         {
-            get { return (AreaKindDesc)_capture.Settings.AreaKind; }
+            get => (AreaKindDesc)_capture.Settings.AreaKind;
             set { _capture.Settings.AreaKind = (AreaKind)value; OnPropertyChanged(nameof(AreaKind)); }
         }
 
         public BitRateDesc Rate
         {
-            get { return (BitRateDesc)_capture.Settings.Rate; }
+            get => (BitRateDesc)_capture.Settings.Rate;
             set { _capture.Settings.Rate = (BitRate)value; OnPropertyChanged(nameof(Rate)); }
         }
 
         public VideoCodecDesc VideoCodec
         {
-            get { return (VideoCodecDesc)_capture.Settings.VideoCodec; }
-            set { _capture.Settings.VideoCodec = (VideoCodec)value; OnPropertyChanged(nameof(VideoCodec)); }
+            get => (VideoCodecDesc)_capture.Settings.VideoCodec;
+            set
+            {
+                _capture.Settings.VideoCodec = (VideoCodec)value;
+                OnPropertyChanged(nameof(VideoCodec));
+            }
         }
 
         public int Fps
         {
-            get { return _capture.Settings.Fps; }
-            set { _capture.Settings.Fps = value; OnPropertyChanged(nameof(Fps)); }
+            get => _capture.Settings.Fps;
+            set
+            {
+                _capture.Settings.Fps = value;
+                OnPropertyChanged(nameof(Fps));
+            }
         }
+
+        public bool IsRecordBlock => !_capture.IsRecording;
 
         #endregion Properties
 
@@ -142,10 +183,19 @@
         public VmAForgeCapture()
         {
             _capture[CaptureInfObjects.Cursor] = new CursorCapture();
-            //SetEvent();
+            SetEvent();
         }
 
         #endregion Constructors
+
+        #region Events
+
+        /// <summary>
+        /// Подписка на событие уведомления об изменениях свойств.
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion Events
 
         #region Methods
 
@@ -157,18 +207,15 @@
         public Window GetWindow(object sender)
         {
             //Получаем ссылку на родительское окно(если оно было указанно).
-            return sender is Window ? (Window)sender :
-                sender is DependencyObject ? Window.GetWindow((DependencyObject)sender) : null;
+            return sender is Window window ? window :
+                sender is DependencyObject dependencyObject ? Window.GetWindow(dependencyObject) : null;
         }
+
         private void OnHotKeyFromStartOrStop(HotKey hotKey)
         {
             //CommandRecord?.Execute(hotKey is HotKeyWnd ? (hotKey as HotKeyWnd).Owner : null);
         }
 
-        /// <summary>
-        /// Подписка на событие уведомления об изменениях свойств.
-        /// </summary>
-        public event PropertyChangedEventHandler PropertyChanged;
         /// <summary>
         /// Вызов уведомления об изменениях свойств. 
         /// </summary>
@@ -181,42 +228,47 @@
 
         protected void SetEvent()
         {
-            //_capture.Recording += (s, e) =>
-            //{
-            //    OnPropertyChanged(nameof(DirPath));
-            //    OnPropertyChanged(nameof(FileName));
-            //    OnPropertyChanged(nameof(IsRecordBlock));
-            //};
-            //_capture.Recorded += (s, e) =>
-            //{
-            //    if (true)
-            //    {
-            //        // -c:v libx264 -c:a aac -strict experimental -b:a 192K 
-            //        //ffmpeg -i … -c:a copy -c:v libx264 -crf 18 -preset veryslow …
+            _capture.OnUpdated += (s, e) =>
+            {
+                if (e != CaptureEvent.Finished)
+                    return;
 
-            //        string options = " -c:v libx264 -c:a aac -strict experimental -b:a 192K ";//flv
-            //        //string options = "-s 1280x720 -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 10";//swf
-            //        string fileargs = $"-i \"{ _capture.FullName}\" " + options + $" \"{Path.Combine(_capture.DirPath, _capture.FileName)}.flv\" -y";
-            //        System.Diagnostics.Process p = new System.Diagnostics.Process();
-            //        p.StartInfo.FileName = "ffmpeg.exe";
-            //        p.StartInfo.Arguments = fileargs;
-            //        p.StartInfo.UseShellExecute = false;
-            //        p.StartInfo.CreateNoWindow = false;
-            //        p.StartInfo.RedirectStandardOutput = false;
-            //        p.Start();
-            //        //string str_output = p.StandardOutput.ReadToEnd();
-            //        p.WaitForExit(50000);
+                //TODO: В отдельный класс, для работы с файлом конвертации ffmpeg.exe
 
-            //        //Открываем расположение(с выделением файла).
-            //        //System.Diagnostics.Process.Start("cmd.exe", $"call ffmpeg -i {_capture.FullName} {Path.GetFileNameWithoutExtension(_capture.FullName)}.swf -y");
-            //    }
-            //    if (true)
-            //    {
-            //        //Открываем расположение(с выделением файла).
-            //        System.Diagnostics.Process.Start("explorer.exe", $"/select, \"{_capture.FullName}\"");
-            //    }
-            //    OnPropertyChanged(nameof(IsRecordBlock));
-            //};
+                const int CONVERTION_TIMEOUT = 50000;
+                string fullname =
+                    Path.Combine(_capture.Settings.OutputPath,
+                        Path.ChangeExtension(
+                            Path.GetFileNameWithoutExtension(_capture.FileName), _capture.FileExt));
+
+
+                // -c:v libx264 -c:a aac -strict experimental -b:a 192K 
+                //ffmpeg -i … -c:a copy -c:v libx264 -crf 18 -preset veryslow …
+
+                string options = " -c:v libx264 -c:a aac -strict experimental -b:a 192K ";//flv
+                                                                                          //string options = "-s 1280x720 -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 10";//swf
+                string fileargs = $"-i \"{fullname}\" " + options + $" \"{Path.Combine(_capture.Settings.OutputPath, _capture.FileName)}.flv\" -y";
+                System.Diagnostics.Process p = new System.Diagnostics.Process
+                {
+                    StartInfo =
+                        {
+                            FileName = "ffmpeg.exe",
+                            Arguments = fileargs,
+                            UseShellExecute = false,
+                            CreateNoWindow = false,
+                            RedirectStandardOutput = false
+                        }
+                };
+                p.Start();
+                //string str_output = p.StandardOutput.ReadToEnd();
+
+                p.WaitForExit(CONVERTION_TIMEOUT);
+
+                //Открываем расположение(с выделением файла).
+                System.Diagnostics.Process.Start("explorer.exe", $"/select, \"{fullname}\"");
+                //System.Diagnostics.Process.Start("cmd.exe", $"call ffmpeg -i {_capture.FullName} {Path.GetFileNameWithoutExtension(_capture.FullName)}.swf -y");
+
+            };
         }
 
         #endregion Methods
@@ -254,17 +306,20 @@
         //    }
         //}
 
-        //[DisplayName("Обновить")]
-        //public ICommand ClickGetAllDevices
-        //{
-        //    get
-        //    {
-        //        return new DelegateCommand((obj) =>
-        //        {
-        //            DeviceArray = _capture.GetAllDevices();
-        //        }, (obj) => { return _capture != null; });
-        //    }
-        //}
+        [DisplayName("Обновить")]
+        public ICommand CommandGetAllDevices
+        {
+            get
+            {
+                return
+                    new DelegateCommand((obj) =>
+                    {
+                        DeviceArray = Screen.AllScreens.Select(s => s.DeviceName).ToArray();
+                    },
+                    (obj) => !_capture.IsRecording);
+            }
+        }
+
         //[DisplayName("Выделить")]
         //public ICommand ClickSettingArea
         //{
@@ -285,7 +340,7 @@
         //}
 
         [DisplayName("Запуск")]
-        public ICommand ClickStartAsync
+        public ICommand CommandStart
         {
             get
             {
@@ -294,34 +349,39 @@
                     {
                         try
                         {
-                            ////Настройка.
-                            //_capture.SetOptions(this);
-                            //if ((this as IAreaCaptureOptions).AreaKind != _capture.AreaKind || !_capture.HasArea())
-                            //    _capture.SetArea(this);
                             //Запуск захвата.
                             _capture.Start();
+
+                            OnPropertyChanged(nameof(IsRecordBlock));
                         }
                         catch (Exception ex)
                         {
-                            DXMessageBox.Show(ex.Message, ex.Source, MessageBoxButton.OK, MessageBoxImage.Warning);
+                            //DXMessageBox.Show(ex.Message, ex.Source, MessageBoxButton.OK, MessageBoxImage.Warning);
                         }
 
                     },
-                    (obj) => { return !_capture.IsRecording; });
+                    (obj) => !_capture.IsRecording);
             }
         }
         [DisplayName("Стоп")]
-        public ICommand ClickStopAsync
+        public ICommand CommandStop
         {
             get
             {
                 return
                     new DelegateCommand((obj) =>
                     {
-                        //Остановка захвата.
-                        _capture.Stop();
+                        try
+                        {
+                            //Остановка захвата.
+                            _capture.Stop();
+                        }
+                        finally
+                        {
+                            OnPropertyChanged(nameof(IsRecordBlock));
+                        }
                     },
-                    (obj) => { return _capture.IsRecording; });
+                    (obj) => _capture.IsRecording);
             }
         }
 
@@ -359,21 +419,21 @@
         //            });
         //    }
         //}
-        //public ICommand CommandClose
-        //{
-        //    get
-        //    {
-        //        return
-        //            new DelegateCommand((obj) =>
-        //            {
-        //                _hotKey?.Dispose();
-        //                //Остановка захвата.
-        //                ClickStopAsync?.Execute(obj);
-        //            });
-        //    }
-        //}
+
+        public ICommand CommandClose
+        {
+            get
+            {
+                return
+                    new DelegateCommand((obj) =>
+                    {
+                        _hotKey?.Dispose();
+                        //Остановка захвата.
+                        CommandStop?.Execute(obj);
+                    });
+            }
+        }
 
         #endregion Commands
-
     }
 }

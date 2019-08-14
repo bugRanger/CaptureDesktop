@@ -104,6 +104,7 @@ namespace CaptureDesktop.Model
     {
         public CaptureException(string message) : base(message) { }
     }
+
     class Capture : IAreaCaptureOptions
     {
         public Capture()

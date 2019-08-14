@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Text;
 using System.Drawing;
 using System.Threading;
@@ -12,86 +11,43 @@ using Capture;
 
 using AForge.Video;
 using AForge.Video.FFMPEG;
-using System.Windows.Forms;
 
 namespace CaptureDesktop.Model.AForge
 {
-    /// <summary>
-    /// Количество1 бит используемых для обработки данных в единицу времени.
-    /// </summary>
-    public enum BitRate : int
-    {
-        _50kbit = 5000,
-        _100kbit = 10000,
-        _500kbit = 50000,
-        _1000kbit = 1000000,
-        _2000kbit = 2000000,
-        _3000kbit = 3000000,
-        _4000kbit = 4000000,
-        _5000kbit = 5000000
-    }
-    /// <summary>
-    /// Тип захвата видео.
-    /// </summary>
-    public enum AreaKind : int
-    {
-        /// <summary>
-        /// Захват всех источников.
-        /// </summary>
-        All,
-        /// <summary>
-        /// Захват области.
-        /// </summary>
-        Area,
-        /// <summary>
-        /// Захват окна.
-        /// </summary>
-        Window,
-        /// <summary>
-        /// Захват устройства.
-        /// </summary>
-        Device
-    }
-
-    public class AForgeCaptureSettings : CaptureSettings<BitRate, VideoCodec, AreaKind>
-    {
-        public override ICaptureSettings<BitRate, VideoCodec, AreaKind> Default { get { return Empty; } }
-
-        public static AForgeCaptureSettings Empty => new AForgeCaptureSettings()
-        {
-            OutputPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Templates),
-                System.Reflection.Assembly.GetExecutingAssembly().GetName().Name),
-
-            Area = GetScreenAll(),
-            AreaKind = AreaKind.All,
-
-            VideoCodec = VideoCodec.MPEG4,
-            Rate = BitRate._5000kbit,
-            Fps = 15,
-        };
-
-        public static Rectangle GetScreenAll()
-        {
-            var result = new Rectangle();
-
-            Screen.AllScreens.ToList().ForEach(f => result = Rectangle.Union(result, f.Bounds));
-
-            return result;
-        }
-    }
-
     /// <summary>
     /// Захват изображения.
     /// </summary>
     public class AForgeCapture : CaptureCommon<BitRate, VideoCodec, AreaKind>
     {
+        #region Fields
+
+        private VideoFileWriter _writer { get; set; }
+
+        private ScreenCaptureStream _streamVideo { get; set; }
+
+        #endregion Fields
+
+        #region Properties
+
+        public string FileName { get; protected set; }
+
+        /// <summary>
+        /// Поддерживаемое расширение.
+        /// </summary>
+        public string FileExt => ".avi";
+
+        #endregion Properties
+
+        #region Constructors
+
         /// <summary>
         /// Конструктор.
         /// </summary>
         public AForgeCapture()
         {
-            _writer = new VideoFileWriter();            
+            _writer = new VideoFileWriter();
         }
+
         /// <summary>
         /// Конструктор.
         /// </summary>
@@ -101,52 +57,14 @@ namespace CaptureDesktop.Model.AForge
             Settings = settings;
         }
 
-        /// <summary>
-        /// Поддерживаемое расширение.
-        /// </summary>
-        private string FileExt => ".avi";
-
-        private Stopwatch _watch { get; set; }
-        private VideoFileWriter _writer { get; set; }
-        private ScreenCaptureStream _streamVideo { get; set; }
-
-        public override void GetFrame(object sender, Bitmap frame)
+        ~AForgeCapture()
         {
-            base.GetFrame(sender, frame);
-            //Проверка флага.
-            if (IsRecording)
-                _writer.WriteVideoFrame(frame);//Запись в поток.
+            _writer?.Dispose();
         }
 
-        /// <summary>
-        /// Запуск захвата видео в поток.
-        /// </summary>
-        /// <returns>В случае успеха операции вернет true, в противном случае - false.</returns>
-        protected bool StartAsyncEx()
-        {
-            _streamVideo = new ScreenCaptureStream(
-                //HINT> Перехват для базовых значений в случае отсутствия.
-                Settings.Area == Rectangle.Empty ? 
-                Settings.Default.Area : Settings.Area);
-            _streamVideo.NewFrame += (s, e) => GetFrame(s, e.Frame);
-            _streamVideo.Start();
-            _watch = new Stopwatch();
-            _watch.Start();
-            //Возвращаем результат.
-            return true;
-        }
-        /// <summary>
-        /// Остановка захвата видео в поток.
-        /// </summary>
-        protected void StopAsyncEx()
-        {
-            //Останавливаем.
-            _watch?.Reset();
-            Thread.Sleep(500);
-            _streamVideo?.SignalToStop();
-            Thread.Sleep(500);
-            _writer?.Close();
-        }
+        #endregion Constructors
+
+        #region Methods
 
         /// <summary>
         /// Запускаем запись.
@@ -154,6 +72,25 @@ namespace CaptureDesktop.Model.AForge
         /// <returns>В случае успеха операции вернет true, в противном случае - false.</returns>
         public override void Start()
         {
+            switch (Settings.AreaKind)
+            {
+                case AreaKind.All:
+                    Settings.Area = AForgeCaptureSettings.GetScreenAll();
+                    break;
+                case AreaKind.Area:
+                    Settings.Area = AForgeCaptureSettings.GetScreenArea();
+                    break;
+                case AreaKind.Device:
+                    Settings.Area = AForgeCaptureSettings.GetScreenDevice();
+                    break;
+                case AreaKind.Window:
+                    Settings.Area = AForgeCaptureSettings.GetScreenWindow();
+                    break;
+
+                default:
+                    break;
+            }
+
             //Проверка пути.
             if (string.IsNullOrEmpty(Settings.OutputPath) || !Directory.Exists(Path.GetFullPath(Settings.OutputPath)))
             {
@@ -166,11 +103,10 @@ namespace CaptureDesktop.Model.AForge
                 Directory.CreateDirectory(Settings.OutputPath);
             }
             //Формируем имя файла.
-            var fileName = string.Format(@"{0}_{1}",
-                Environment.UserName.ToUpper(), DateTime.Now.ToString("d_MMM_yyyy_HH_mm_ssff"));
+            FileName = $@"{Environment.UserName.ToUpper()}_{DateTime.Now:d_MMM_yyyy_HH_mm_ssff}";
             //Формируем путь.
-            var fullName = Path.Combine(Settings.OutputPath,
-                Path.ChangeExtension(Path.GetFileNameWithoutExtension(fileName), FileExt));
+            string fullName = Path.Combine(Settings.OutputPath,
+                Path.ChangeExtension(Path.GetFileNameWithoutExtension(FileName), FileExt));
             try
             {
                 //Открываем поток на запись.
@@ -183,25 +119,71 @@ namespace CaptureDesktop.Model.AForge
                     (int)(Settings.Rate == default(int) ? Settings.Default.Rate : Settings.Rate));
 
                 //Запускаем запись.
-                if (StartAsyncEx())
+                if (StartEx())
                     base.Start();
             }
-            catch (Exception)
+            catch(Exception e)
             {
                 //Останавливаем запись.
-                StopAsyncEx();
-                base.Stop();
-
+                Stop();
+                //TODO: Необходим Logger.
                 throw;
             }
         }
+
         /// <summary>
         /// Останавливаем запись.
         /// </summary>
         public override void Stop()
         {
-            base.Stop();
-            this.StopAsyncEx();
+            try
+            {
+                base.Stop();
+            }
+            finally
+            {
+                StopEx();
+            }
         }
+
+        /// <summary>
+        /// Получение кадра.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="frame"></param>
+        public override void GetFrame(object sender, Bitmap frame)
+        {
+            base.GetFrame(sender, frame);
+
+            //Проверка флага.
+            if (IsRecording)
+                _writer.WriteVideoFrame(frame);//Запись в поток.
+        }
+
+        /// <summary>
+        /// Запуск захвата видео в поток.
+        /// </summary>
+        /// <returns>В случае успеха операции вернет true, в противном случае - false.</returns>
+        protected bool StartEx()
+        {
+
+            //HINT> Перехват для базовых значений в случае отсутствия.
+            _streamVideo = new ScreenCaptureStream(Settings.Area == Rectangle.Empty ? Settings.Default.Area : Settings.Area);
+            _streamVideo.NewFrame += (s, e) => GetFrame(s, e.Frame);
+            _streamVideo.Start();
+            //Возвращаем результат.
+            return true;
+        }
+
+        /// <summary>
+        /// Остановка захвата видео в поток.
+        /// </summary>
+        protected void StopEx()
+        {
+            _streamVideo?.Stop();
+            _writer?.Close();
+        }
+
+        #endregion Methods
     }
 }

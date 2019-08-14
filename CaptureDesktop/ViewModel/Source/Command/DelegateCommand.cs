@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Windows.Input;
 
-namespace Sima.Common.WPF.Tools.Command
+namespace Common.WPF.Tools.Command
 {
     /// <summary>
     /// Делегат исполняемого действия.

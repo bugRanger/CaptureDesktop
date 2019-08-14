@@ -6,6 +6,8 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Drawing.Drawing2D;
+using CaptureDesktop.Model;
+using System.Windows.Forms;
 
 namespace Capture
 {
@@ -26,6 +28,7 @@ namespace Capture
         /// Выбранная область.
         /// </summary>
         Rectangle Area { get; set; }
+
         /// <summary>
         /// Тип захвата видео.
         /// </summary>
@@ -35,10 +38,12 @@ namespace Capture
         /// Количество бит исп. для обработки данных.
         /// </summary>
         TBitRate Rate { get; set; }
+
         /// <summary>
         /// Тип используемого сжатия.
         /// </summary>
         TVideoCodec VideoCodec { get; set; }
+
         /// <summary>
         /// Количество кадров в секунду.
         /// </summary>
@@ -58,6 +63,8 @@ namespace Capture
         where TAreaKind : struct
         where TVideoCodec : struct
     {
+        #region Properties
+
         /// <summary>
         /// Настройки захвата.
         /// </summary>
@@ -73,20 +80,34 @@ namespace Capture
         /// </summary>
         bool IsRecording { get; }
 
-        void GetFrame(object sender, Bitmap frame);
+        #endregion Properties
+
+        #region Events
+
+        event EventHandler<CaptureEvent> OnUpdated;
+
+        #endregion Events
+
+        #region Methods
 
         /// <summary>
         /// Запуск захвата.
         /// </summary>
         void Start();
+
         /// <summary>
         /// Остановка захвата.
         /// </summary>
         void Stop();
-        /// <summary>
-        /// Пауза захвата.
-        /// </summary>
-        void Pause();
+
+        ///// <summary>
+        ///// Пауза захвата.
+        ///// </summary>
+        //void Pause();
+
+        void GetFrame(object sender, Bitmap frame);
+
+        #endregion Methods
     }
 
     [Flags]
@@ -114,62 +135,175 @@ namespace Capture
         Fully = -1
     }
 
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TBitRate"></typeparam>
+    /// <typeparam name="TVideoCodec"></typeparam>
+    /// <typeparam name="TAreaKind"></typeparam>
     public abstract class CaptureSettings<TBitRate, TVideoCodec, TAreaKind> :
         ICaptureSettings<TBitRate, TVideoCodec, TAreaKind>
         where TBitRate : struct
         where TAreaKind : struct
         where TVideoCodec : struct
     {
+        #region Properties
+
         public abstract ICaptureSettings<TBitRate, TVideoCodec, TAreaKind> Default { get; }
 
         public string OutputPath { get; set; } = string.Empty;
 
         public Rectangle Area { get; set; } = Rectangle.Empty;
-        public TAreaKind AreaKind { get; set; }
 
-        public TVideoCodec VideoCodec { get; set; }
-        public TBitRate Rate { get; set; }
+        public TAreaKind AreaKind { get; set; } = GetFirstValue<TAreaKind>();
+
+        public TVideoCodec VideoCodec { get; set; } = GetFirstValue<TVideoCodec>();
+
+        public TBitRate Rate { get; set; } = GetFirstValue<TBitRate>();
+
         public int Fps { get; set; }
+
+        #endregion Properties
+
+        #region Methods
+
+        // TODO: Убрать в отдельный модуль.
+
+        public static Rectangle GetScreenAll()
+        {
+            var result = new Rectangle();
+
+            Screen.AllScreens.ToList().ForEach(f => result = Rectangle.Union(result, f.Bounds));
+
+            return result;
+        }
+
+        public static Rectangle GetScreenArea()
+        {
+            using (var selected = new TopForm())
+            {
+                if (selected.ShowDialog() == DialogResult.OK
+                    && selected.w != 0
+                    && selected.h != 0)
+                {
+                    decimal prop = (decimal)4 / 3;
+                    decimal realProp = (decimal)selected.w / selected.h;
+                    bool makeLonger = realProp < prop;
+                    int w = Convert.ToInt32(makeLonger ? selected.h * prop : selected.w);
+                    int h = Convert.ToInt32(makeLonger ? selected.h : selected.w / prop);
+
+                    if ((w & 1) != 0)
+                        w = w + 1;
+                    if ((h & 1) != 0)
+                        h = h + 1;
+
+                    return new Rectangle(selected.AreaBounds.Left, selected.AreaBounds.Top, w, h);
+                }
+                else
+                {
+                    return GetScreenAll();
+                }
+            }
+        }
+
+        public static Rectangle GetScreenDevice()
+        {
+            return Rectangle.Empty;
+            //return Screen.AllScreens.First(scr => scr.DeviceName.Equals(DeviceName)).Bounds;
+        }
+
+        public static Rectangle GetScreenWindow()
+        {
+            return Rectangle.Empty;
+        }
+
+        protected static T GetFirstValue<T>()
+        {
+            return typeof(T).IsEnum ? Enum.GetValues(typeof(T)).Cast<T>().First() : default(T);
+        }
+
+        #endregion Methods
     }
 
+    public enum CaptureEvent
+    {
+        Started,
+        Finished
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <typeparam name="TBitRate"></typeparam>
+    /// <typeparam name="TVideoCodec"></typeparam>
+    /// <typeparam name="TAreaKind"></typeparam>
     public abstract class CaptureCommon<TBitRate, TVideoCodec, TAreaKind> :
         ICaptureController<TBitRate, TVideoCodec, TAreaKind>
         where TBitRate : struct
         where TAreaKind : struct
         where TVideoCodec : struct
     {
+        #region Fields
+
+        protected Dictionary<CaptureInfObjects, ICaptureInfObject> CaptureObjects { get; } =
+            new Dictionary<CaptureInfObjects, ICaptureInfObject>();
+
+        #endregion Fields
+
+        #region Properties
+
+        public ICaptureInfObject this[CaptureInfObjects key]
+        {
+            get => CaptureObjects.ContainsKey(key) ? CaptureObjects[key] : null;
+            set => CaptureObjects[key] = value;
+        }
+
         public CaptureSettings<TBitRate, TVideoCodec, TAreaKind> Settings { get; protected set; }
 
         public CaptureInfObjects Mods { get; set; } = CaptureInfObjects.Default;
 
         public virtual bool IsRecording { get; protected set; } = false;
 
-        public ICaptureInfObject this[CaptureInfObjects key]
+        #endregion Properties
+
+        #region Events
+
+        public event EventHandler<CaptureEvent> OnUpdated;
+
+        #endregion Events
+
+        #region Methods
+
+        /// <summary>
+        /// Запуск захвата.
+        /// </summary>
+        public virtual void Start()
         {
-            get { return _captureObjs.ContainsKey(key) ? _captureObjs[key] : null; }
-            set { _captureObjs[key] = value; }
+            IsRecording = true;
+            RaiseUpdated(CaptureEvent.Started);
         }
 
-        protected Dictionary<CaptureInfObjects, ICaptureInfObject> _captureObjs { get; } =
-                new Dictionary<CaptureInfObjects, ICaptureInfObject>();
-
-        protected virtual void MakeGraphics(Graphics graphics)
+        /// <summary>
+        /// Остановка захвата.
+        /// </summary>
+        public virtual void Stop()
         {
-            if (Mods == CaptureInfObjects.None)
-                return;
-
-            foreach (var item in Enum.GetValues(typeof(CaptureInfObjects)).Cast<CaptureInfObjects>())
-            {
-                if ((Mods & item) == item && _captureObjs.ContainsKey(item))
-                    _captureObjs[item]?.Draw(graphics, Settings.Area.Left, Settings.Area.Top);
-            }
+            IsRecording = false;
+            RaiseUpdated(CaptureEvent.Finished);
         }
 
+        ///// <summary>
+        ///// Остановка записи.
+        ///// </summary>
+        //public virtual void Pause() { IsRecording = false; }
+
+        /// <summary>
+        /// Получить изображение.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="frame"></param>
         public virtual void GetFrame(object sender, Bitmap frame)
         {
-            if (!IsRecording)
-                return;
-
             using (Graphics graphics = Graphics.FromImage(frame))
             {
                 graphics.CompositingQuality = CompositingQuality.HighSpeed;
@@ -180,82 +314,27 @@ namespace Capture
         }
 
         /// <summary>
-        /// Остановка записи.
+        /// Добавить объектов.
         /// </summary>
-        public virtual void Pause() { IsRecording = false; }
+        /// <param name="graphics"></param>
+        protected virtual void MakeGraphics(Graphics graphics)
+        {
+            if (Mods == CaptureInfObjects.None)
+                return;
 
-        /// <summary>
-        /// Запуск захвата.
-        /// </summary>
-        public virtual void Start() { IsRecording = true; }
-        /// <summary>
-        /// Остановка захвата.
-        /// </summary>
-        public virtual void Stop() { Pause(); }
+            foreach (CaptureInfObjects item in Enum.GetValues(typeof(CaptureInfObjects)).Cast<CaptureInfObjects>())
+            {
+                if ((Mods & item) == item && CaptureObjects.ContainsKey(item))
+                    CaptureObjects[item]?.Draw(graphics, Settings.Area.Left, Settings.Area.Top);
+            }
+        }
+
+        protected void RaiseUpdated(CaptureEvent @event)
+        {
+            EventHandler<CaptureEvent> handler = OnUpdated;
+            handler?.Invoke(this, @event);
+        }
+
+        #endregion Methods
     }
-
-
-    //public abstract class CaptureCursor : ICaptureObject
-    //{
-    //    public virtual void Draw(Graphics graphics, int left, int top)
-    //    {
-    //        if (graphics == null)
-    //        {
-    //            throw new ArgumentNullException(nameof(graphics));
-    //        }
-
-
-    //        ////Получение информации о курсоре.
-    //        //CURSORINFO pci;
-    //        //pci.cbSize = System.Runtime.InteropServices.Marshal.SizeOf(typeof(CURSORINFO));
-    //        //if (GetCursorInfo(out pci))
-    //        //{
-
-    //        //    //Формирование дорисовки к позиции курсора.
-    //        //    if (pci.flags == CURSOR_SHOWING)
-    //        //    {
-    //        //        //Смещение при обрезке кадра.
-    //        //        int x = pci.ptScreenPos.x - left;
-    //        //        int y = pci.ptScreenPos.y - top;
-    //        //        int rX = 0;
-    //        //        int rY = 0;
-
-    //        //        //Получаем информацию о иконке курсора для корректировки смещения.
-    //        //        ICONINFO iconInfo;
-    //        //        IntPtr hicon = CopyIcon(pci.hCursor);
-    //        //        if (hicon != IntPtr.Zero && GetIconInfo(hicon, out iconInfo))
-    //        //        {
-    //        //            //Смещаем курсор относительно размерности иконки.
-    //        //            x -= iconInfo.xHotspot;
-    //        //            y -= iconInfo.yHotspot;
-    //        //            //Смещаем маркер.
-    //        //            rX += iconInfo.xHotspot;
-    //        //            rY += iconInfo.yHotspot;
-    //        //        }
-    //        //        //Задаем настройки маркера.
-    //        //        Color c = Color.WhiteSmoke;
-    //        //        float width = 3;
-    //        //        int radius = 30;
-    //        //        //При зажатия клавиш.
-    //        //        if ((Control.MouseButtons & MouseButtons.Left) != 0 || (Control.MouseButtons & MouseButtons.Right) != 0)
-    //        //        {
-    //        //            //Задаем настройки маркера.
-    //        //            c = ((Control.MouseButtons & MouseButtons.Right) != 0) ? Color.OrangeRed : Color.YellowGreen;
-    //        //            width = 5;
-    //        //            radius = 40;
-    //        //        }
-    //        //        //Прорисовка маркера.
-    //        //        var background = new Pen(Color.Black, width + 1.5F);
-    //        //        graphics.DrawEllipse(background, (x - radius / 2) + rX, (y - radius / 2) + rY, radius, radius);
-    //        //        var marker = new Pen(c, width);
-    //        //        graphics.DrawEllipse(marker, (x - radius / 2) + rX, (y - radius / 2) + rY, radius, radius);
-    //        //        //Прорисовка курсора.
-    //        //        DrawIcon(graphics.GetHdc(), x, y, pci.hCursor);
-    //        //        //Завершение работы с изображением.
-    //        //        graphics.ReleaseHdc();
-    //        //    }
-    //        //}
-
-    //    }
-    //}
 }

@@ -1,5 +1,4 @@
 ﻿using CaptureDesktop.Model;
-using DevExpress.Xpf.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,11 +18,16 @@ namespace CaptureDesktop
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : DXWindow
+    public partial class MainWindow : Window
     {
         public MainWindow()
         {
             InitializeComponent();
+        }
+
+        private void ComboBox_DropDownOpened(object sender, EventArgs e)
+        {
+
         }
     }
 }

@@ -1,21 +1,19 @@
-﻿<dx:DXWindow x:Class="CaptureDesktop.MainWindow"
+﻿<Window x:Class="CaptureDesktop.MainWindow"
              x:Name="Main"
              xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
-             xmlns:dx="http://schemas.devexpress.com/winfx/2008/xaml/core"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-             xmlns:dxmvvm="http://schemas.devexpress.com/winfx/2008/xaml/mvvm" 
+             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
              xmlns:local="clr-namespace:CaptureDesktop"
             
-             xmlns:PR="clr-namespace:Sima.Common.WPF.Tools.PropertyAttribute"
+             xmlns:PR="clr-namespace:Common.WPF.Tools.PropertyAttribute"
              xmlns:VM="clr-namespace:CaptureDesktop.ViewModel"
-             xmlns:VMAForge="clr-namespace:CaptureDesktop.ViewModel.AForgeAtapter"
-                     
+             xmlns:VMAForge="clr-namespace:CaptureDesktop.ViewModel.AForge"
+             xmlns:markup="clr-namespace:Common.WPF.Tools.Markup"
+
              WindowStartupLocation="CenterOwner" 
-             
-             dx:ThemeManager.ThemeName="DXStyle"
              
              mc:Ignorable="d"
              Title="MainWindow" 
@@ -28,30 +26,31 @@
         <PR:PropertyDisplayNameConvert x:Key="PropertyDisplayNameConvert" />
         <PR:PropertyDescriptionConvert x:Key="PropertyDescriptionConvert" />
 
-        <Style TargetType="{x:Type dxe:TextEdit}">
+        <Style TargetType="{x:Type TextBox}">
             <Setter Property="IsEnabled" Value="{Binding IsRecordBlock, UpdateSourceTrigger=PropertyChanged}"/>
             <Setter Property="Margin" Value="2"/>
             <Setter Property="Background" Value="White"/>
             <!--<Setter Property="ToolTip" Value="{x:Null}"/>-->
         </Style>
-        <Style TargetType="{x:Type dxe:ComboBoxEdit}">
+        <Style TargetType="{x:Type ComboBox}">
             <Setter Property="IsEnabled" Value="{Binding IsRecordBlock, UpdateSourceTrigger=PropertyChanged}"/>
             <Setter Property="Margin" Value="2"/>
-            <Setter Property="IsTextEditable" Value="False"/>
+            <Setter Property="IsEditable" Value="False"/>
             <Setter Property="Background" Value="White"/>
         </Style>
     </Window.Resources>
-    <dxmvvm:Interaction.Behaviors>
+    <!-- TODO -->
+    <!--<dxmvvm:Interaction.Behaviors>
         <dxmvvm:EventToCommand EventName="Closed"
                                Command="{Binding CommandClose}" 
                                CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
         <dxmvvm:EventToCommand EventName="Loaded"
                                Command="{Binding CommandLoaded}" 
                                CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
-    </dxmvvm:Interaction.Behaviors>
+    </dxmvvm:Interaction.Behaviors>-->
     <Window.DataContext>
-        <VM:VmCapture />
-        <!--<VMAForge:VmAForgeCapture />-->
+        <!--<VM:VmCapture />-->
+        <VMAForge:VmAForgeCapture />
     </Window.DataContext>
     <Grid Margin="3,3">
         <Grid>
@@ -60,9 +59,6 @@
                 <RowDefinition Height="25"/>
             </Grid.RowDefinitions>
             <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition />
-                </Grid.ColumnDefinitions>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="25"/>
                     <RowDefinition Height="25" />
@@ -71,51 +67,40 @@
                     <RowDefinition Height="25"/>
                     <RowDefinition />
                 </Grid.RowDefinitions>
-                <dxe:ComboBoxEdit Grid.Row="0"
-                                  EditValue="{Binding AreaKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                                   
-                                  ItemsSource="{dxe:EnumItemsSource EnumType={x:Type VM:ScreenKindDesc}}"
-                                  >                                        
-                    <!--<dxe:ComboBoxEdit.Style>
-                        <Style TargetType="{x:Type dxe:ComboBoxEdit}">
-                            <Style.Triggers>
-                                <DataTrigger Binding="{Binding AreaKind}" Value="{x:Type VM:ScreenKindDesc.}">
-                                    <Setter Property="ItemsSource">
-                                        <Setter.Value>
-                                            <dxe:EnumItemsSource EnumType="{x:Type VM:ScreenKindDesc}"/>
-                                        </Setter.Value>
-                                    </Setter>
-                                    --><!--<dxe:ComboBoxEdit.ItemsSource>
-                                        <dxe:EnumItemsSource EnumType="{x:Type VM:ScreenKindDesc}"/>
-                                    </dxe:ComboBoxEdit.ItemsSource>--><!--
-                                </DataTrigger>
-                            </Style.Triggers>
-                        </Style>
-                    </dxe:ComboBoxEdit.Style>-->
-                    <dxe:ComboBoxEdit.Buttons>
+                <ComboBox Grid.Row="0"
+                          SelectedValue="{Binding AreaKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                                   
+                          ItemsSource="{markup:EnumBindingSource EnumType=VMAForge:AreaKindDesc}"> 
+                    <!-- TODO -->
+                    <!--<dxe:ComboBoxEdit.Buttons>
                         <dxe:ButtonInfo GlyphKind="Edit" 
                                         Command="{Binding ClickSettingArea}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
-                    </dxe:ComboBoxEdit.Buttons>
-                </dxe:ComboBoxEdit>
-                <dxe:ComboBoxEdit Grid.Row="1"
-                                  EditValue="{Binding DeviceName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"
-                                  NullText="{Binding ConverterParameter=DeviceName, Converter={StaticResource PropertyDisplayNameConvert}}"
-                                  ItemsSource="{Binding DeviceArray}">
-                    <dxmvvm:Interaction.Behaviors>
+                    </dxe:ComboBoxEdit.Buttons>-->
+                </ComboBox>
+                <ComboBox Grid.Row="1"
+                          SelectedValue="{Binding DeviceName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"
+                          ItemsSource="{Binding DeviceArray}">                    
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="DropDownOpened">
+                            <i:InvokeCommandAction Command="{Binding CommandGetAllDevices}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <!-- TODO --><!--NullText="{Binding ConverterParameter=DeviceName, Converter={StaticResource PropertyDisplayNameConvert}}"-->
+                    <!--<dxmvvm:Interaction.Behaviors>
                         <dxmvvm:EventToCommand EventName="DefaultButtonClick" Command="{Binding ClickGetAllDevices}"/>
                     </dxmvvm:Interaction.Behaviors>
                     <dxe:ComboBoxEdit.Buttons>
                         <dxe:ButtonInfo GlyphKind="Refresh" 
                                         Command="{Binding ClickGetAllDevices}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
-                    </dxe:ComboBoxEdit.Buttons>
-                </dxe:ComboBoxEdit>
-                <dxe:ComboBoxEdit Grid.Row="2" 
-                                  EditValue="{Binding Rate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}" 
-                                  ItemsSource="{dxe:EnumItemsSource EnumType=VM:BitRateDesc}"/>
-                <dxe:ComboBoxEdit Grid.Row="3"
-                                  EditValue="{Binding Codec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                      
-                                  ItemsSource="{dxe:EnumItemsSource EnumType=VM:VideoCodecDesc}"/>
-                <dxe:TextEdit EditValue="{Binding Fps}" Grid.Row="4" 
-                              NullText="{Binding ConverterParameter=Fps, Converter={StaticResource PropertyDisplayNameConvert}}"/>
+                    </dxe:ComboBoxEdit.Buttons>-->
+                </ComboBox>
+                <ComboBox Grid.Row="2" 
+                          SelectedValue="{Binding Rate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}" 
+                          ItemsSource="{markup:EnumBindingSource EnumType=VMAForge:BitRateDesc}"/>
+                <ComboBox Grid.Row="3"
+                          SelectedValue="{Binding VideoCodec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                      
+                          ItemsSource="{markup:EnumBindingSource EnumType=VMAForge:VideoCodecDesc}"/>
+                <TextBox Text="{Binding Fps}" Grid.Row="4"/>
+                <!-- TODO --><!--NullText="{Binding ConverterParameter=Fps, Converter={StaticResource PropertyDisplayNameConvert}}"/>-->
             </Grid>
             <!--Bottom-->
             <Grid Grid.Column="0" Grid.Row="1" Margin="0,2,0,0">
@@ -129,14 +114,14 @@
                                  Content="{Binding ConverterParameter=ClickSettingArea, Converter={StaticResource PropertyDisplayNameConvert}}"
                                  Command="{Binding ClickSettingArea}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>-->
                 <!--Запуск-->
-                <dx:SimpleButton Grid.Column="1" Margin="1"
-                                 Content="{Binding ConverterParameter=ClickStartAsync, Converter={StaticResource PropertyDisplayNameConvert}}"
-                                 Command="{Binding ClickStartAsync}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                <Button Grid.Column="1" Margin="1"
+                                 Content="{Binding ConverterParameter=CommandStart, Converter={StaticResource PropertyDisplayNameConvert}}"
+                                 Command="{Binding CommandStart}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                 <!--Остановка-->
-                <dx:SimpleButton Grid.Column="2" Margin="1"
-                                 Content="{Binding ConverterParameter=ClickStopAsync, Converter={StaticResource PropertyDisplayNameConvert}}"
-                                 Command="{Binding ClickStopAsync}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                <Button Grid.Column="2" Margin="1"
+                                 Content="{Binding ConverterParameter=CommandStop, Converter={StaticResource PropertyDisplayNameConvert}}"
+                                 Command="{Binding CommandStop}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
             </Grid>
         </Grid>
     </Grid>
-</dx:DXWindow>
+</Window>
