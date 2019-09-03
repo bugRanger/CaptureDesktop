@@ -8,74 +8,69 @@ using System.Windows.Forms;
 
 namespace CaptureDesktop.Model
 {
-	class TopForm : Form
-	{
-		bool inProgress = false;
-		Panel p = new Panel();
+    class TopForm : Form
+    {
+        private bool _inProgress;
+        private readonly Panel _panel = new Panel();
 
-		public Rectangle AreaBounds
-		{
-			get {
-				return p.Bounds;
-			}
-		}
+        public Rectangle AreaBounds => _panel.Bounds;
 
-		public int t, l, w, h = 0;
+        public int t, l, w, h = 0;
 
-		public TopForm()
-		{
-			WindowState = FormWindowState.Maximized;
-			FormBorderStyle = FormBorderStyle.None;
-			Bounds = Screen.PrimaryScreen.Bounds;
-			BackColor = Color.White;
-			TransparencyKey = Color.Gray;
-			Opacity = 0.4;
-			p.BackColor = Color.Gray;
-			p.BorderStyle = BorderStyle.FixedSingle;
-			Cursor = Cursors.Cross;
-			FormClosing += TopForm_FormClosing;
-			MouseDown += TopForm_MouseDown;
-			MouseUp += TopForm_MouseUp;
-		}
+        public TopForm()
+        {
+            WindowState = FormWindowState.Maximized;
+            FormBorderStyle = FormBorderStyle.None;
+            Bounds = Screen.PrimaryScreen.Bounds;
+            BackColor = Color.White;
+            TransparencyKey = Color.Gray;
+            Opacity = 0.4;
+            _panel.BackColor = Color.Gray;
+            _panel.BorderStyle = BorderStyle.FixedSingle;
+            Cursor = Cursors.Cross;
 
-		private void TopForm_MouseUp(object sender, MouseEventArgs e)
-		{
-			if (inProgress)
-			{
-				w = p.Width;
-				h = p.Height;
-				MouseMove -= TopForm_MouseMove;
-				DialogResult = DialogResult.OK;
-				Close();
-			}
-		}
+            FormClosing += TopForm_FormClosing;
+            MouseDown += TopForm_MouseDown;
+            MouseMove += TopForm_MouseMove;
+        }
 
-		private void TopForm_MouseDown(object sender, MouseEventArgs e)
-		{
-			if (!inProgress)
-			{
-				inProgress = true;
-				Controls.Add(p);
-				p.Left = l = e.X;
-				p.Top = t = e.Y;
-				MouseMove += TopForm_MouseMove;
+        private void TopForm_MouseDown(object sender, MouseEventArgs e)
+        {
+            if (!_inProgress)
+            {
+                Controls.Add(_panel);
+                _panel.Left = l = e.X;
+                _panel.Top = t = e.Y;
+
+                _inProgress = true;
             }
-		}
+            else
+            {
+                w = _panel.Width;
+                h = _panel.Height;
 
-		private void TopForm_MouseMove(object sender, MouseEventArgs e)
-		{
-			SuspendLayout();
-			p.SuspendLayout();
-			p.Width = e.X - p.Left;
-			p.Height = e.Y - p.Top;
-			p.ResumeLayout();
-			ResumeLayout();
+                _inProgress = false;
+                DialogResult = DialogResult.OK;
+                Close();
+            }
+        }
 
-		}
+        private void TopForm_MouseMove(object sender, MouseEventArgs e)
+        {
+            if (!_inProgress)
+                return;
 
-		private void TopForm_FormClosing(object sender, FormClosingEventArgs e)
-		{
-			Cursor = Cursors.Arrow;
-		}
-	}
+            SuspendLayout();
+            _panel.SuspendLayout();
+            _panel.Width = e.X - _panel.Left;
+            _panel.Height = e.Y - _panel.Top;
+            _panel.ResumeLayout();
+            ResumeLayout();
+        }
+
+        private void TopForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            Cursor = Cursors.Arrow;
+        }
+    }
 }

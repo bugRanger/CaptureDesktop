@@ -245,9 +245,11 @@ namespace CaptureDesktop.ViewModel.AForge
                 // -c:v libx264 -c:a aac -strict experimental -b:a 192K 
                 //ffmpeg -i … -c:a copy -c:v libx264 -crf 18 -preset veryslow …
 
-                string options = " -c:v libx264 -c:a aac -strict experimental -b:a 192K ";//flv
-                                                                                          //string options = "-s 1280x720 -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 10";//swf
-                string fileargs = $"-i \"{fullname}\" " + options + $" \"{Path.Combine(_capture.Settings.OutputPath, _capture.FileName)}.flv\" -y";
+                //string options = " -c:v libx264 -c:a aac -strict experimental -b:a 192K ", ext = "flv";
+                //string options = "-s 1280x720 -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 10", ext = "swf";
+                string options = "", ext = "gif";
+
+                string fileargs = $"-i \"{fullname}\" {options} \"{Path.Combine(_capture.Settings.OutputPath, _capture.FileName)}.{ext}\" -y";
                 System.Diagnostics.Process p = new System.Diagnostics.Process
                 {
                     StartInfo =
@@ -260,8 +262,6 @@ namespace CaptureDesktop.ViewModel.AForge
                         }
                 };
                 p.Start();
-                //string str_output = p.StandardOutput.ReadToEnd();
-
                 p.WaitForExit(CONVERTION_TIMEOUT);
 
                 //Открываем расположение(с выделением файла).

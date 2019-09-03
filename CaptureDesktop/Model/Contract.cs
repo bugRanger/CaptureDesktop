@@ -186,23 +186,16 @@ namespace Capture
                     && selected.w != 0
                     && selected.h != 0)
                 {
-                    decimal prop = (decimal)4 / 3;
-                    decimal realProp = (decimal)selected.w / selected.h;
-                    bool makeLonger = realProp < prop;
-                    int w = Convert.ToInt32(makeLonger ? selected.h * prop : selected.w);
-                    int h = Convert.ToInt32(makeLonger ? selected.h : selected.w / prop);
+                    // Hint: Должны быть кратны 2ум.
+                    if ((selected.w & 1) != 0)
+                        selected.w += 1;
+                    if ((selected.h & 1) != 0)
+                        selected.h += 1;
 
-                    if ((w & 1) != 0)
-                        w = w + 1;
-                    if ((h & 1) != 0)
-                        h = h + 1;
+                    return new Rectangle(selected.l, selected.t, selected.w, selected.h);
+                }
 
-                    return new Rectangle(selected.AreaBounds.Left, selected.AreaBounds.Top, w, h);
-                }
-                else
-                {
-                    return GetScreenAll();
-                }
+                return GetScreenAll();
             }
         }
 
