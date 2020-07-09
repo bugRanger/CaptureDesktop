@@ -4,3 +4,6 @@ CaptureDesktop/.vscode/
 CaptureDesktop/obj/Debug/
 .vs/CaptureDesktop/v15/
 packages/
+/Capture/bin/Debug
+/Common.Utils/obj/Debug
+/Capture/obj/Debug
