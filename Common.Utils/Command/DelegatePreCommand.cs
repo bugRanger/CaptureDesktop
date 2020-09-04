@@ -1,4 +1,4 @@
-﻿namespace Common.Utils.WPF.Tools.Command
+﻿namespace Common.Utils.Command
 {
     using System;
     using System.Linq;

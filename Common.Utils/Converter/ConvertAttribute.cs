@@ -1,11 +1,10 @@
-﻿namespace Common.Using.WPF.Tools.PropertyAttribute
+﻿namespace Common.Utils.Converter
 {
     using System;
-    using System.Windows.Data;
-
-    using System.Reflection;
-    using System.Globalization;
     using System.ComponentModel;
+    using System.Globalization;
+    using System.Reflection;
+    using System.Windows.Data;
 
     /// <summary>
     /// Извлечение данных о свойстве из отслеживаемых полей.

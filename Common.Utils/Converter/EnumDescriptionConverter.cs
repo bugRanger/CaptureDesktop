@@ -1,4 +1,4 @@
-﻿namespace Common.Utils.WPF.Tools.PropertyAttribute
+﻿namespace Common.Utils.Converter
 {
     using System;
     using System.ComponentModel;

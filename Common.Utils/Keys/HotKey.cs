@@ -1,12 +1,12 @@
-﻿namespace Common.Utils
+﻿namespace Common.Utils.Keys
 {
     using System;
+    using System.Collections.Generic;
+    using System.Diagnostics;
+    using System.Runtime.InteropServices;
     using System.Windows;
     using System.Windows.Input;
     using System.Windows.Interop;
-    using System.Diagnostics;
-    using System.Collections.Generic;
-    using System.Runtime.InteropServices;
 
     public class HotKey : IDisposable
     {

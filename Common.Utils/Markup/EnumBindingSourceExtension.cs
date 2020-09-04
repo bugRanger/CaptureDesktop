@@ -1,9 +1,6 @@
-﻿
-
-namespace Common.WPF.Tools.Markup
+﻿namespace Common.Utils.Markup
 {
     using System;
-    using System.Windows;
     using System.Windows.Markup;
 
     public class EnumBindingSourceExtension : MarkupExtension

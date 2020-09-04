@@ -1,0 +1,126 @@
+﻿<Window x:Class="Capture.Desktop.View.MainWindow"
+            x:Name="Main"
+            xmlns:dxe="http://schemas.devexpress.com/winfx/2008/xaml/editors"
+            xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+            xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+            xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+            xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+            xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
+            xmlns:local="clr-namespace:CaptureDesktop"
+            xmlns:VM="clr-namespace:CaptureDesktop.ViewModel"
+            xmlns:aForge="clr-namespace:Capture.Desktop.ViewModel.AForge"
+            xmlns:markup="clr-namespace:Common.Utils.Markup;assembly=Common.Utils"
+            xmlns:converter="clr-namespace:Common.Utils.Converter;assembly=Common.Utils"
+
+            WindowStartupLocation="CenterOwner" 
+             
+            mc:Ignorable="d"
+            Title="MainWindow" 
+             
+            ResizeMode="NoResize"
+             
+            Height="230" 
+            Width="250">
+    <Window.Resources>
+        <converter:PropertyDisplayNameConvert x:Key="PropertyDisplayNameConvert" />
+        <converter:PropertyDescriptionConvert x:Key="PropertyDescriptionConvert" />
+
+        <Style TargetType="{x:Type TextBox}">
+            <Setter Property="IsEnabled" Value="{Binding IsStopped, UpdateSourceTrigger=PropertyChanged}"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="Background" Value="White"/>
+            <!--<Setter Property="ToolTip" Value="{x:Null}"/>-->
+        </Style>
+        <Style TargetType="{x:Type ComboBox}">
+            <Setter Property="IsEnabled" Value="{Binding IsStopped, UpdateSourceTrigger=PropertyChanged}"/>
+            <Setter Property="Margin" Value="2"/>
+            <Setter Property="IsEditable" Value="False"/>
+            <Setter Property="Background" Value="White"/>
+        </Style>
+    </Window.Resources>
+    <!-- TODO -->
+    <!--<dxmvvm:Interaction.Behaviors>
+        <dxmvvm:EventToCommand EventName="Closed"
+                               Command="{Binding CommandClose}" 
+                               CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+        <dxmvvm:EventToCommand EventName="Loaded"
+                               Command="{Binding CommandLoaded}" 
+                               CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+    </dxmvvm:Interaction.Behaviors>-->
+    <Window.DataContext>
+        <!--<VM:VmCapture />-->
+        <aForge:VmAForgeCapture />
+    </Window.DataContext>
+    <Grid Margin="3,3">
+        <Grid>
+            <Grid.RowDefinitions>
+                <RowDefinition />
+                <RowDefinition Height="25"/>
+            </Grid.RowDefinitions>
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="25"/>
+                    <RowDefinition Height="25" />
+                    <RowDefinition Height="25"/>
+                    <RowDefinition Height="25"/>
+                    <RowDefinition Height="25"/>
+                    <RowDefinition />
+                </Grid.RowDefinitions>
+                <ComboBox Grid.Row="0"
+                          SelectedValue="{Binding AreaKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                                   
+                          ItemsSource="{markup:EnumBindingSource EnumType=aForge:AreaKindDesc}"> 
+                    <!-- TODO -->
+                    <!--<dxe:ComboBoxEdit.Buttons>
+                        <dxe:ButtonInfo GlyphKind="Edit" 
+                                        Command="{Binding ClickSettingArea}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                    </dxe:ComboBoxEdit.Buttons>-->
+                </ComboBox>
+                <ComboBox Grid.Row="1"
+                          SelectedValue="{Binding DeviceName, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"
+                          ItemsSource="{Binding DeviceArray}">                    
+                    <i:Interaction.Triggers>
+                        <i:EventTrigger EventName="DropDownOpened">
+                            <i:InvokeCommandAction Command="{Binding CommandGetAllDevices}" />
+                        </i:EventTrigger>
+                    </i:Interaction.Triggers>
+                    <!-- TODO --><!--NullText="{Binding ConverterParameter=DeviceName, Converter={StaticResource PropertyDisplayNameConvert}}"-->
+                    <!--<dxmvvm:Interaction.Behaviors>
+                        <dxmvvm:EventToCommand EventName="DefaultButtonClick" Command="{Binding ClickGetAllDevices}"/>
+                    </dxmvvm:Interaction.Behaviors>
+                    <dxe:ComboBoxEdit.Buttons>
+                        <dxe:ButtonInfo GlyphKind="Refresh" 
+                                        Command="{Binding ClickGetAllDevices}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                    </dxe:ComboBoxEdit.Buttons>-->
+                </ComboBox>
+                <ComboBox Grid.Row="2" 
+                          SelectedValue="{Binding Rate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}" 
+                          ItemsSource="{markup:EnumBindingSource EnumType=aForge:BitRateDesc}"/>
+                <ComboBox Grid.Row="3"
+                          SelectedValue="{Binding VideoCodec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                      
+                          ItemsSource="{markup:EnumBindingSource EnumType=aForge:VideoCodecDesc}"/>
+                <TextBox Text="{Binding Fps}" Grid.Row="4"/>
+                <!-- TODO --><!--NullText="{Binding ConverterParameter=Fps, Converter={StaticResource PropertyDisplayNameConvert}}"/>-->
+            </Grid>
+            <!--Bottom-->
+            <Grid Grid.Column="0" Grid.Row="1" Margin="0,2,0,0">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition />
+                    <ColumnDefinition Width="80"/>
+                    <ColumnDefinition Width="80"/>
+                </Grid.ColumnDefinitions>
+                <!--Настройки-->
+                <!--<dx:SimpleButton Grid.Column="0" Margin="1" Width="80" HorizontalAlignment="Left"
+                                 Content="{Binding ConverterParameter=ClickSettingArea, Converter={StaticResource PropertyDisplayNameConvert}}"
+                                 Command="{Binding ClickSettingArea}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>-->
+                <!--Запуск-->
+                <Button Grid.Column="1" Margin="1"
+                                 Content="{Binding ConverterParameter=CommandStart, Converter={StaticResource PropertyDisplayNameConvert}}"
+                                 Command="{Binding CommandStart}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                <!--Остановка-->
+                <Button Grid.Column="2" Margin="1"
+                                 Content="{Binding ConverterParameter=CommandStop, Converter={StaticResource PropertyDisplayNameConvert}}"
+                                 Command="{Binding CommandStop}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+            </Grid>
+        </Grid>
+    </Grid>
+</Window>

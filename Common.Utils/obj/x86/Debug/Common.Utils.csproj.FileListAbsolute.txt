@@ -1,0 +1,5 @@
+C:\Users\AnikaevNI\Desktop\CaptureDesktop\Common.Utils\bin\x86\Debug\Common.Utils.dll
+C:\Users\AnikaevNI\Desktop\CaptureDesktop\Common.Utils\bin\x86\Debug\Common.Utils.pdb
+C:\Users\AnikaevNI\Desktop\CaptureDesktop\Common.Utils\obj\x86\Debug\Common.Utils.csproj.CoreCompileInputs.cache
+C:\Users\AnikaevNI\Desktop\CaptureDesktop\Common.Utils\obj\x86\Debug\Common.Utils.dll
+C:\Users\AnikaevNI\Desktop\CaptureDesktop\Common.Utils\obj\x86\Debug\Common.Utils.pdb
