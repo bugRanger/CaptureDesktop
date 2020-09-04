@@ -24,11 +24,17 @@
             return result;
         }
 
-        public Rectangle GetScreenArea()
+        public Rectangle GetScreenArea(string deviceName)
         {
+            if (string.IsNullOrWhiteSpace(deviceName))
+                return Rectangle.Empty;
+
             // TODO Replace.
             using (var selected = new TopForm())
             {
+                selected.StartPosition = FormStartPosition.Manual;
+                selected.Bounds = Screen.AllScreens.First(scr => scr.DeviceName.Equals(deviceName)).Bounds;
+
                 if (selected.ShowDialog() != DialogResult.OK || selected.w == 0 || selected.h == 0)
                     return GetScreenAll();
 
@@ -39,7 +45,12 @@
                 if ((selected.h & 1) != 0)
                     selected.h += 1;
 
-                return new Rectangle(selected.l, selected.t, selected.w, selected.h);
+                return 
+                    new Rectangle(
+                        selected.l + selected.Bounds.X, 
+                        selected.t + selected.Bounds.Y, 
+                        selected.w, 
+                        selected.h);
             }
         }
 

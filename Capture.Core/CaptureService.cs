@@ -78,7 +78,7 @@
                     break;
 
                 case AreaKind.Area:
-                    _captureArea = Selector.GetScreenArea();
+                    _captureArea = Selector.GetScreenArea(Settings.AreaName);
                     break;
 
                 case AreaKind.Device:

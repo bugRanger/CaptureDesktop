@@ -9,7 +9,7 @@ namespace Capture.Core
 
         Rectangle GetScreenAll();
 
-        Rectangle GetScreenArea();
+        Rectangle GetScreenArea(string deviceName);
 
         Rectangle GetScreenDevice(string deviceName);
 
