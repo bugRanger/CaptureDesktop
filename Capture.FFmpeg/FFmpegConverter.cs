@@ -34,7 +34,7 @@
 
         protected override bool Handle(string sourcePath, string extension, out string destPath)
         {
-            destPath = $"{Path.Combine(_settings.OutputPath, Path.GetFileNameWithoutExtension(sourcePath))}.{extension}";
+            destPath = $"{Path.Combine(_settings.OutputPath, Path.GetFileNameWithoutExtension(sourcePath))}{extension}";
             var ffmpegProcess = new Process
             {
                 StartInfo =
