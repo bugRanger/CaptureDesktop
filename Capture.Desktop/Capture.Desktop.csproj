@@ -90,7 +90,10 @@
       <Generator>MSBuild:Compile</Generator>
       <SubType>Designer</SubType>
     </ApplicationDefinition>
-    <Compile Include="ViewModel\AForge\VmAForgeCapture.cs" />
+    <Compile Include="ViewModel\[Enums]\AreaKindDesc.cs" />
+    <Compile Include="ViewModel\[Enums]\BitRateDesc.cs" />
+    <Compile Include="ViewModel\[Enums]\VideoCodecDesc.cs" />
+    <Compile Include="ViewModel\VmCapture.cs" />
     <Compile Include="ViewModel\[Interfaces]\IVMCapture.cs" />
     <Page Include="View\MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -139,6 +142,10 @@
     <ProjectReference Include="..\Capture.Core\Capture.Core.csproj">
       <Project>{3bd7c38c-7975-456e-a299-88b7611cc426}</Project>
       <Name>Capture.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Capture.FFmpeg\Capture.FFmpeg.csproj">
+      <Project>{662EC4F3-3805-40C5-A5BF-3FF004386C78}</Project>
+      <Name>Capture.FFmpeg</Name>
     </ProjectReference>
     <ProjectReference Include="..\Common.Utils\Common.Utils.csproj">
       <Project>{D6053BA5-0782-4F65-ACD1-FF94E9EA30EC}</Project>

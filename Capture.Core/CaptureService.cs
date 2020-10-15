@@ -7,7 +7,7 @@
     using System.IO;
     using System.Linq;
 
-    public abstract class CaptureService<TSettings> : ICaptureController<TSettings>
+    public abstract class CaptureService<TSettings> : ICaptureService
         where TSettings : class, ICaptureSettings
     {
         #region Fields
@@ -28,17 +28,26 @@
 
         public IAreaSelector Selector { get; }
 
+        // TODO Move capture param.
+        public string FileName { get; protected set; }
+
+        // TODO Move capture param.
+        public string FileExt { get; protected set; }
+
         public TSettings Settings { get; }
 
         public CaptureInfObjects Mods { get; set; } = CaptureInfObjects.Default;
 
         public virtual CaptureState State { get; private set; }
 
+        ICaptureSettings ICaptureService.Settings => Settings;
+
         #endregion Properties
 
         #region Events
 
         public event EventHandler<CaptureState> OnStateUpdated;
+        public event EventHandler<string> OnFinished;
 
         #endregion Events
 
@@ -59,7 +68,7 @@
         /// <summary>
         /// Запуск захвата.
         /// </summary>
-        public void Start()
+        public void Record()
         {
             //Проверка пути.
             if (string.IsNullOrEmpty(Settings.OutputPath) || !Directory.Exists(Path.GetFullPath(Settings.OutputPath)))
@@ -68,6 +77,12 @@
             //Проверяем каталог.
             if (!Directory.Exists(Settings.OutputPath))
                 Directory.CreateDirectory(Settings.OutputPath);
+
+            //Формируем имя файла.
+            var fileName = $@"{Environment.UserName.ToUpper()}_{DateTime.Now:d_MMM_yyyy_HH_mm_ssff}";
+            //Формируем путь.
+            FileName = Path.Combine(Settings.OutputPath,
+                Path.ChangeExtension(Path.GetFileNameWithoutExtension(fileName), FileExt));
 
             _captureArea = Rectangle.Empty;
 
@@ -97,7 +112,7 @@
                 throw new ArgumentException("Is empty capture area.");
 
             StartEx(_captureArea);
-            SetState(CaptureState.Started);
+            UpdateState(CaptureState.Started);
         }
 
         /// <summary>
@@ -111,7 +126,8 @@
             }
             finally
             {
-                SetState(CaptureState.Finished);
+                UpdateState(CaptureState.Finished);
+                OnFinished?.Invoke(this, FileName);
             }
         }
 
@@ -134,10 +150,10 @@
         /// Установить состояние.
         /// </summary>
         /// <param name="captureEvent">Состояние</param>
-        private void SetState(CaptureState captureEvent)
+        private void UpdateState(CaptureState state)
         {
-            State = captureEvent;
-            OnStateUpdated?.Invoke(this, State);
+            State = state;
+            OnStateUpdated?.Invoke(this, state);
         }
 
         /// <summary>

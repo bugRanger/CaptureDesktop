@@ -6,9 +6,8 @@
             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
             xmlns:i="clr-namespace:System.Windows.Interactivity;assembly=System.Windows.Interactivity"
-            xmlns:local="clr-namespace:CaptureDesktop"
-            xmlns:VM="clr-namespace:CaptureDesktop.ViewModel"
-            xmlns:aForge="clr-namespace:Capture.Desktop.ViewModel.AForge"
+            xmlns:local="clr-namespace:Capture.Desktop"
+            xmlns:vm="clr-namespace:Capture.Desktop.ViewModel;assembly=Capture.Desktop"
             xmlns:markup="clr-namespace:Common.Utils.Markup;assembly=Common.Utils"
             xmlns:converter="clr-namespace:Common.Utils.Converter;assembly=Common.Utils"
 
@@ -47,10 +46,6 @@
                                Command="{Binding CommandLoaded}" 
                                CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
     </dxmvvm:Interaction.Behaviors>-->
-    <Window.DataContext>
-        <!--<VM:VmCapture />-->
-        <aForge:VmAForgeCapture />
-    </Window.DataContext>
     <Grid Margin="3,3">
         <Grid>
             <Grid.RowDefinitions>
@@ -68,7 +63,7 @@
                 </Grid.RowDefinitions>
                 <ComboBox Grid.Row="0"
                           SelectedValue="{Binding AreaKind, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                                   
-                          ItemsSource="{markup:EnumBindingSource EnumType=aForge:AreaKindDesc}"> 
+                          ItemsSource="{markup:EnumBindingSource EnumType=vm:AreaKindDesc}"> 
                     <!-- TODO -->
                     <!--<dxe:ComboBoxEdit.Buttons>
                         <dxe:ButtonInfo GlyphKind="Edit" 
@@ -94,10 +89,10 @@
                 </ComboBox>
                 <ComboBox Grid.Row="2" 
                           SelectedValue="{Binding Rate, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}" 
-                          ItemsSource="{markup:EnumBindingSource EnumType=aForge:BitRateDesc}"/>
+                          ItemsSource="{markup:EnumBindingSource EnumType=vm:BitRateDesc}"/>
                 <ComboBox Grid.Row="3"
-                          SelectedValue="{Binding VideoCodec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                      
-                          ItemsSource="{markup:EnumBindingSource EnumType=aForge:VideoCodecDesc}"/>
+                          SelectedValue="{Binding Codec, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged, ValidatesOnDataErrors=True, ValidatesOnNotifyDataErrors=True}"                      
+                          ItemsSource="{Binding AllowCodecs}"/>
                 <TextBox Text="{Binding Fps}" Grid.Row="4"/>
                 <!-- TODO --><!--NullText="{Binding ConverterParameter=Fps, Converter={StaticResource PropertyDisplayNameConvert}}"/>-->
             </Grid>

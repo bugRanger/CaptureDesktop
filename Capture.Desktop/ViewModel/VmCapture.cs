@@ -1,105 +1,27 @@
-﻿namespace Capture.Desktop.ViewModel.AForge
+﻿namespace Capture.Desktop.ViewModel
 {
     using System;
-    using System.ComponentModel;
-    using System.Drawing;
-    using System.IO;
     using System.Linq;
     using System.Windows;
     using System.Windows.Forms;
     using System.Windows.Input;
+    using System.ComponentModel;
 
-    using Capture.AForge;
 
-    using Common.Utils;
     using Common.Utils.Command;
-    using Common.Utils.Converter;
     using Common.Utils.Keys;
 
     using Core;
-    using Core.Objects;
-
-    using global::AForge.Video.FFMPEG;
 
     using MessageBox = System.Windows.MessageBox;
 
-    /// <summary>
-    /// Количество бит используемых для обработки данных в единицу времени.
-    /// </summary>
-    [TypeConverter(typeof(EnumDescriptionConverter))]
-    public enum BitRateDesc : int
-    {
-        [Description("50 Кбит")]
-        _50kbit = BitRate._50kbit,
-        [Description("100 Кбит")]
-        _100kbit = BitRate._100kbit,
-        [Description("500 Кбит")]
-        _500kbit = BitRate._500kbit,
-        [Description("1000 Кбит")]
-        _1000kbit = BitRate._1000kbit,
-        [Description("2000 Кбит")]
-        _2000kbit = BitRate._2000kbit,
-        [Description("3000 Кбит")]
-        _3000kbit = BitRate._3000kbit,
-        [Description("4000 Кбит")]
-        _4000kbit = BitRate._4000kbit,
-        [Description("5000 Кбит")]
-        _5000kbit = BitRate._5000kbit,
-    }
-
-    /// <summary>
-    /// Тип захвата видео.
-    /// </summary>
-    [TypeConverter(typeof(EnumDescriptionConverter))]
-    public enum AreaKindDesc : int
-    {
-        /// <summary>
-        /// Захват всех источников.
-        /// </summary>
-        [Description("Все")]
-        All = AreaKind.All,
-        /// <summary>
-        /// Захват области.
-        /// </summary>
-        [Description("Выделенная")]
-        Area = AreaKind.Area,
-        /// <summary>
-        /// Захват устройства.
-        /// </summary>
-        [Description("Устройство")]
-        Device = AreaKind.Device,
-        /// <summary>
-        /// Захват окна.
-        /// </summary>
-        [Description("Окно")]
-        Window = AreaKind.Window,
-    }
-    /// <summary>
-    /// Тип используемого сжатия.
-    /// </summary>
-    [TypeConverter(typeof(EnumDescriptionConverter))]
-    public enum VideoCodecDesc
-    {
-        [Description("По умолчанию")]
-        Default = VideoCodec.Default,
-        FLV1 = VideoCodec.FLV1,
-        H263P = VideoCodec.H263P,
-        MPEG2 = VideoCodec.MPEG2,
-        MPEG4 = VideoCodec.MPEG4,
-        MSMPEG4v2 = VideoCodec.MSMPEG4v2,
-        MSMPEG4v3 = VideoCodec.MSMPEG4v3,
-        Raw = VideoCodec.Raw,
-        WMV1 = VideoCodec.WMV1,
-        WMV2 = VideoCodec.WMV2,
-    }
-
-    public class VmAForgeCapture : INotifyPropertyChanged
+    public class VmCapture : IVMCapture, INotifyPropertyChanged
     {
         #region Fields
 
         private readonly HotKey _hotKey;
 
-        private readonly AForgeCapture _capture;
+        private readonly ICaptureService _capture;
 
         #endregion Fields
 
@@ -135,31 +57,42 @@
             get => _capture.Settings.OutputPath;
             set
             {
-                _capture.Settings.OutputPath = value; OnPropertyChanged(nameof(OutputPath));
+                _capture.Settings.OutputPath = value; 
+                OnPropertyChanged(nameof(OutputPath));
             }
         }
 
         public AreaKindDesc AreaKind
         {
             get => (AreaKindDesc)_capture.Settings.AreaKind;
-            set { _capture.Settings.AreaKind = (AreaKind)value; OnPropertyChanged(nameof(AreaKind)); }
+            set 
+            { 
+                _capture.Settings.AreaKind = (AreaKind)value; 
+                OnPropertyChanged(nameof(AreaKind)); 
+            }
         }
 
         public BitRateDesc Rate
         {
             get => (BitRateDesc)_capture.Settings.Rate;
-            set { _capture.Settings.Rate = (BitRate)value; OnPropertyChanged(nameof(Rate)); }
+            set
+            { 
+                _capture.Settings.Rate = (BitRate)value; 
+                OnPropertyChanged(nameof(Rate)); 
+            }
         }
 
-        public VideoCodecDesc VideoCodec
+        public VideoCodecDesc Codec
         {
-            get => (VideoCodecDesc)_capture.Settings.VideoCodec;
+            get => (VideoCodecDesc)_capture.Settings.Codec;
             set
             {
-                _capture.Settings.VideoCodec = (VideoCodec)value;
+                _capture.Settings.Codec = (VideoCodec)value;
                 OnPropertyChanged(nameof(VideoCodec));
             }
         }
+
+        public VideoCodecDesc[] AllowCodecs => _capture.Settings.AllowCodecs.Select(s => (VideoCodecDesc)s).ToArray();
 
         public int Fps
         {
@@ -177,16 +110,13 @@
 
         #region Constructors
 
-        public VmAForgeCapture()
+        public VmCapture(ICaptureService capture)
         {
+            // TODO Add hot key manager.
             _hotKey = new HotKey(Key.R, KeyModifier.Alt | KeyModifier.Shift, CommandStart);
-            _capture = new AForgeCapture(new AForgeSettings())
-            {
-                [CaptureInfObjects.Cursor] = new CursorCapture()
-            };
-            _deviceArray = _capture.Selector.Devices.ToArray();
 
-            SetEvent();
+            _capture = capture;
+            _deviceArray = _capture.Selector.Devices.ToArray();
         }
 
         #endregion Constructors
@@ -222,51 +152,6 @@
         {
             PropertyChangedEventHandler handler = PropertyChanged;
             handler?.Invoke(this, new PropertyChangedEventArgs(prop));
-        }
-
-        protected void SetEvent()
-        {
-            // TODO Impl tabs for convert params.
-            _capture.OnStateUpdated += (s, e) =>
-            {
-                if (e != CaptureState.Finished)
-                    return;
-
-                //TODO: В отдельный класс, для работы с файлом конвертации ffmpeg.exe
-
-                const int CONVERTION_TIMEOUT = 50000;
-                string fullname =
-                    Path.Combine(_capture.Settings.OutputPath,
-                        Path.ChangeExtension(
-                            Path.GetFileNameWithoutExtension(_capture.FileName), _capture.FileExt));
-
-
-                // -c:v libx264 -c:a aac -strict experimental -b:a 192K 
-                //ffmpeg -i … -c:a copy -c:v libx264 -crf 18 -preset veryslow …
-
-                //string options = " -c:v libx264 -c:a aac -strict experimental -b:a 192K ", ext = "flv";
-                //string options = "-s 1280x720 -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 10", ext = "swf";
-                string options = "", ext = "gif";
-
-                string fileargs = $"-i \"{fullname}\" {options} \"{Path.Combine(_capture.Settings.OutputPath, _capture.FileName)}.{ext}\" -y";
-                System.Diagnostics.Process p = new System.Diagnostics.Process
-                {
-                    StartInfo =
-                        {
-                            FileName = "ffmpeg.exe",
-                            Arguments = fileargs,
-                            UseShellExecute = false,
-                            CreateNoWindow = false,
-                            RedirectStandardOutput = false
-                        }
-                };
-                p.Start();
-                p.WaitForExit(CONVERTION_TIMEOUT);
-
-                //Открываем расположение(с выделением файла).
-                System.Diagnostics.Process.Start("explorer.exe", $"/select, \"{fullname}\"");
-                //System.Diagnostics.Process.Start("cmd.exe", $"call ffmpeg -i {_capture.FullName} {Path.GetFileNameWithoutExtension(_capture.FullName)}.swf -y");
-            };
         }
 
         #endregion Methods
@@ -348,7 +233,7 @@
                         try
                         {
                             //Запуск захвата.
-                            _capture.Start();
+                            _capture.Record();
 
                             OnPropertyChanged(nameof(IsStopped));
                         }

@@ -2,10 +2,7 @@
 {
     using System;
     using System.IO;
-
-    using Core;
-
-    using global::AForge.Video.FFMPEG;
+    using Capture.Core;
 
     public class AForgeSettings : ICaptureSettings
     {
@@ -21,13 +18,16 @@
 
         public int Fps { get; set; }
 
-        public VideoCodec VideoCodec { get; set; }
+        public VideoCodec Codec { get; set; }
+
+        public VideoCodec[] AllowCodecs { get; set; }
 
         public ICaptureSettings Default => Empty;
 
         public static AForgeSettings Empty => new AForgeSettings
         {
-            VideoCodec = VideoCodec.MPEG4,
+            AllowCodecs = new []{ VideoCodec.MPEG4 },
+            Codec = VideoCodec.MPEG4,
             AreaKind = AreaKind.All,
             Rate = BitRate._5000kbit,
             Fps = 15,
