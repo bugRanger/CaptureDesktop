@@ -48,6 +48,7 @@
 
         public event EventHandler<CaptureState> OnStateUpdated;
         public event EventHandler<string> OnFinished;
+        public event EventHandler<Exception> OnError;
 
         #endregion Events
 
@@ -70,49 +71,57 @@
         /// </summary>
         public void Record()
         {
-            //Проверка пути.
-            if (string.IsNullOrEmpty(Settings.OutputPath) || !Directory.Exists(Path.GetFullPath(Settings.OutputPath)))
-                Settings.OutputPath = Settings.Default.OutputPath;
-
-            //Проверяем каталог.
-            if (!Directory.Exists(Settings.OutputPath))
-                Directory.CreateDirectory(Settings.OutputPath);
-
-            //Формируем имя файла.
-            var fileName = $@"{Environment.UserName.ToUpper()}_{DateTime.Now:d_MMM_yyyy_HH_mm_ssff}";
-            //Формируем путь.
-            FileName = Path.Combine(Settings.OutputPath,
-                Path.ChangeExtension(Path.GetFileNameWithoutExtension(fileName), FileExt));
-
-            _captureArea = Rectangle.Empty;
-
-            switch (Settings.AreaKind)
+            try
             {
-                case AreaKind.All:
-                    _captureArea = Selector.GetScreenAll();
-                    break;
+                //Проверка пути.
+                if (string.IsNullOrEmpty(Settings.OutputPath) || !Directory.Exists(Path.GetFullPath(Settings.OutputPath)))
+                    Settings.OutputPath = Settings.Default.OutputPath;
 
-                case AreaKind.Area:
-                    _captureArea = Selector.GetScreenArea(Settings.AreaName);
-                    break;
+                //Проверяем каталог.
+                if (!Directory.Exists(Settings.OutputPath))
+                    Directory.CreateDirectory(Settings.OutputPath);
 
-                case AreaKind.Device:
-                    _captureArea = Selector.GetScreenDevice(Settings.AreaName);
-                    break;
+                //Формируем имя файла.
+                var fileName = $@"{Environment.UserName.ToUpper()}_{DateTime.Now:d_MMM_yyyy_HH_mm_ssff}";
+                //Формируем путь.
+                FileName = Path.Combine(Settings.OutputPath,
+                    Path.ChangeExtension(Path.GetFileNameWithoutExtension(fileName), FileExt));
 
-                case AreaKind.Window:
-                    _captureArea = Selector.GetScreenWindow();
-                    break;
+                _captureArea = Rectangle.Empty;
 
-                default:
-                    throw new ArgumentOutOfRangeException();
+                switch (Settings.AreaKind)
+                {
+                    case AreaKind.All:
+                        _captureArea = Selector.GetScreenAll();
+                        break;
+
+                    case AreaKind.Area:
+                        _captureArea = Selector.GetScreenArea(Settings.AreaName);
+                        break;
+
+                    case AreaKind.Device:
+                        _captureArea = Selector.GetScreenDevice(Settings.AreaName);
+                        break;
+
+                    case AreaKind.Window:
+                        _captureArea = Selector.GetScreenWindow();
+                        break;
+
+                    default:
+                        throw new ArgumentOutOfRangeException();
+                }
+
+                if (_captureArea == null || _captureArea == Rectangle.Empty)
+                    throw new ArgumentException("Is empty capture area.");
+
+                RecordEx(_captureArea);
+                UpdateState(CaptureState.Started);
             }
-
-            if (_captureArea == null || _captureArea == Rectangle.Empty)
-                throw new ArgumentException("Is empty capture area.");
-
-            StartEx(_captureArea);
-            UpdateState(CaptureState.Started);
+            catch (Exception ex)
+            {
+                StopEx();
+                OnError?.Invoke(this, ex);
+            }
         }
 
         /// <summary>
@@ -123,6 +132,10 @@
             try
             {
                 StopEx();
+            }
+            catch (Exception ex)
+            {
+                OnError?.Invoke(this, ex);
             }
             finally
             {
@@ -160,7 +173,7 @@
         /// Запустить.
         /// </summary>
         /// <param name="captureArea">Область захвата.</param>
-        protected virtual void StartEx(Rectangle captureArea)
+        protected virtual void RecordEx(Rectangle captureArea)
         {
         }
 

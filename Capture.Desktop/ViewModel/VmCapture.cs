@@ -13,8 +13,6 @@
 
     using Core;
 
-    using MessageBox = System.Windows.MessageBox;
-
     public class VmCapture : IVMCapture, INotifyPropertyChanged
     {
         #region Fields
@@ -113,7 +111,7 @@
         public VmCapture(ICaptureService capture)
         {
             // TODO Add hot key manager.
-            _hotKey = new HotKey(Key.R, KeyModifier.Alt | KeyModifier.Shift, CommandStart);
+            _hotKey = new HotKey(Key.R, KeyModifier.Alt | KeyModifier.Shift, CommandRecord);
 
             _capture = capture;
             _deviceArray = _capture.Selector.Devices.ToArray();
@@ -223,25 +221,16 @@
         //}
 
         [DisplayName("Запуск")]
-        public ICommand CommandStart
+        public ICommand CommandRecord
         {
             get
             {
                 return
                     new DelegateCommand((obj) =>
                     {
-                        try
-                        {
-                            //Запуск захвата.
-                            _capture.Record();
-
-                            OnPropertyChanged(nameof(IsStopped));
-                        }
-                        catch (Exception ex)
-                        {
-                            MessageBox.Show(ex.Message, ex.Source, MessageBoxButton.OK, MessageBoxImage.Warning);
-                        }
-
+                        //Запуск захвата.
+                        _capture.Record();
+                        OnPropertyChanged(nameof(IsStopped));
                     },
                     (obj) => IsStopped);
             }

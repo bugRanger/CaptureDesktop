@@ -32,8 +32,9 @@
 
         #region Methods
 
-        protected override void Handle(string filePath, string fileExtension)
+        protected override bool Handle(string sourcePath, string extension, out string destPath)
         {
+            destPath = $"{Path.Combine(_settings.OutputPath, Path.GetFileNameWithoutExtension(sourcePath))}.{extension}";
             var ffmpegProcess = new Process
             {
                 StartInfo =
@@ -43,7 +44,7 @@
                     //ffmpeg -i … -c:a copy -c:v libx264 -crf 18 -preset veryslow …
                     //string options = " -c:v libx264 -c:a aac -strict experimental -b:a 192K ", ext = "flv";
                     //string options = "-s 1280x720 -ar 44100 -async 44100 -r 29.970 -ac 2 -qscale 10", ext = "swf";
-                    Arguments = $"-i \"{filePath}\" {_settings.Options} \"{Path.Combine(_settings.OutputPath, Path.GetFileNameWithoutExtension(filePath))}.{fileExtension}\" -y",
+                    Arguments = $"-i \"{sourcePath}\" {_settings.Options} \"{destPath}\" -y",
                     UseShellExecute = false,
                     CreateNoWindow = false,
                     RedirectStandardOutput = false
@@ -51,7 +52,7 @@
             };
 
             ffmpegProcess.Start();
-            ffmpegProcess.WaitForExit(CONVERTION_TIMEOUT);
+            return ffmpegProcess.WaitForExit(CONVERTION_TIMEOUT);
         }
 
         #endregion Methods

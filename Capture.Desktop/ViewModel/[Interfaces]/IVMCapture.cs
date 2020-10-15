@@ -52,7 +52,7 @@
 
         ICommand CommandGetAllDevices { get; }
 
-        ICommand CommandStart { get; }
+        ICommand CommandRecord { get; }
 
         ICommand CommandStop { get; }
 

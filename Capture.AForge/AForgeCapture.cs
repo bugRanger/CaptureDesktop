@@ -80,34 +80,24 @@
         /// Запускаем запись.
         /// </summary>
         /// <returns>В случае успеха операции вернет true, в противном случае - false.</returns>
-        protected override void StartEx(Rectangle captureArea)
+        protected override void RecordEx(Rectangle captureArea)
         {
-            try
-            {
-                if (!_codecMapper.TryGetValue(Settings.Codec, out var codec))
-                    throw new NotSupportedException($"Not supported codec {Enum.GetName(typeof(CoreCodec), Settings.Codec)}");
+            if (!_codecMapper.TryGetValue(Settings.Codec, out var codec))
+                throw new NotSupportedException($"Not supported codec {Enum.GetName(typeof(CoreCodec), Settings.Codec)}");
 
-                //Открываем поток на запись.
-                _writer.Open(
-                    FileName,
-                    captureArea.Width,
-                    captureArea.Height,
-                    Settings.Fps == default(int) ? Settings.Default.Fps : Settings.Fps,
-                    codec,
-                    (int)(Settings.Rate == default(int) ? Settings.Default.Rate : Settings.Rate));
+            //Открываем поток на запись.
+            _writer.Open(
+                FileName,
+                captureArea.Width,
+                captureArea.Height,
+                Settings.Fps == default(int) ? Settings.Default.Fps : Settings.Fps,
+                codec,
+                (int)(Settings.Rate == default(int) ? Settings.Default.Rate : Settings.Rate));
 
-                //HINT> Перехват для базовых значений в случае отсутствия.
-                _streamVideo = new ScreenCaptureStream(captureArea);
-                _streamVideo.NewFrame += (s, e) => CaptureFrame(e.Frame);
-                _streamVideo.Start();
-            }
-            catch
-            {
-                //Останавливаем запись.
-                StopEx();
-                //TODO: Add write log.
-                throw;
-            }
+            //HINT> Перехват для базовых значений в случае отсутствия.
+            _streamVideo = new ScreenCaptureStream(captureArea);
+            _streamVideo.NewFrame += (s, e) => CaptureFrame(e.Frame);
+            _streamVideo.Start();
         }
 
         /// <summary>

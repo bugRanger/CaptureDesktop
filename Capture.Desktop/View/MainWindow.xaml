@@ -109,8 +109,8 @@
                                  Command="{Binding ClickSettingArea}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>-->
                 <!--Запуск-->
                 <Button Grid.Column="1" Margin="1"
-                                 Content="{Binding ConverterParameter=CommandStart, Converter={StaticResource PropertyDisplayNameConvert}}"
-                                 Command="{Binding CommandStart}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
+                                 Content="{Binding ConverterParameter=CommandRecord, Converter={StaticResource PropertyDisplayNameConvert}}"
+                                 Command="{Binding CommandRecord}" CommandParameter="{Binding RelativeSource={RelativeSource FindAncestor, AncestorType={x:Type Window}}}"/>
                 <!--Остановка-->
                 <Button Grid.Column="2" Margin="1"
                                  Content="{Binding ConverterParameter=CommandStop, Converter={StaticResource PropertyDisplayNameConvert}}"

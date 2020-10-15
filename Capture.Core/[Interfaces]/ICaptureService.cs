@@ -20,6 +20,7 @@ namespace Capture.Core
 
         event EventHandler<CaptureState> OnStateUpdated;
         event EventHandler<string> OnFinished;
+        event EventHandler<Exception> OnError;
 
         #endregion Events
 
