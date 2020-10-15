@@ -6,13 +6,8 @@ packages/
 /Capture.Core/obj/
 /Capture.Desktop/bin/
 /Capture.Desktop/obj/
-/Capture.Utils/bin/
-/Capture.Utils/obj/
-/CaptureDesktop/obj/
-/CaptureDesktop/bin/
-/Capture/obj/
-/Capture/bin/
-/Common.Utils/obj/
-/Common.Utils/bin/
 /Capture.FFmpeg/bin/
 /Capture.FFmpeg/obj/
+/Common.Utils/obj/
+/Common.Utils/bin/
+
